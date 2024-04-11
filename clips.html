@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>記録集</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <style>
+        * {
+            color: rgba(255, 240, 200);
+        }
+
+        body {
+            background-color: rgb(50, 10, 0);
+        }
+
+        input {
+            height: 100%;
+            width: 100%;
+        }
+
+        img {
+            height: 100%;
+            width: 100%;
+            max-height: 80px;
+            max-width: 80px;
+        }
+
+        select.half {
+            width: 48%;
+        }
+
+        select.full {
+            width: 96%;
+        }
+
+        select {
+            height: 5vh;
+            font-weight: bold;
+            background-color: rgb(85, 10, 10);
+            margin-bottom: 2px;
+        }
+
+        header {
+            max-width: 1000px;
+            width: 100vw;
+            background-color: rgb(50, 10, 0);
+            position: sticky;
+            width: 100vw;
+            top: 0px;
+            z-index: 10;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        header .select-box {
+            width: 100%;
+            display: none;
+        }
+
+        header .regulations {
+            width: 48%;
+        }
+
+        main {
+            width: 100vw;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        main #records {
+            width: 100%;
+        }
+
+        a:link {
+            color: rgba(255, 240, 200);
+        }
+
+        a:visited {
+            color: rgba(255, 240, 200);
+        }
+
+        .header-panel {
+            width: 48%;
+            display: inline-block;
+        }
+
+        .now-loading {
+            text-align: center;
+            font-weight: bold;
+            color: rgba(200, 255, 200);
+        }
+
+        .row {
+            position: relative;
+            background-color: rgb(50, 10, 0);
+            color: rgba(255, 240, 200);
+            border-top: solid rgba(0, 0, 0, 0.5)
+        }
+
+        .row-odd {
+            background-color: rgb(80, 20, 0);
+        }
+
+        .d {
+            position: absolute;
+            border-bottom: solid 1px rgb(220, 160, 125);
+            border-right: solid 1px rgb(220, 160, 125);
+            border-left: solid 1px rgb(220, 160, 125);
+            overflow-wrap: anywhere;
+            width: 9.5%;
+            height: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .row {
+            height: 80px;
+            width: 96%;
+        }
+
+        .comment {
+            overflow-y: auto;
+        }
+
+        @media screen and (max-width: 768px) {
+            * {
+                font-size: 2vw;
+            }
+
+            img {
+                max-width: 100px;
+            }
+
+            .d {
+                height: 25.0%;
+            }
+
+            .row {
+                height: 100px;
+                width: 98vw;
+            }
+
+            .rule {
+                background-color: rgba(0, 30, 0);
+                color: rgb(240, 240, 130);
+                border: solid 1px rgba(80, 120, 80);
+            }
+        }
+
+        @media screen and (max-width: 512px) {
+            * {
+                font-size: 3vw;
+            }
+        }
+    </style>
+    <script>
+        const CSV_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQjDyl_00bayhBahhb1L0mPHUpYm_1tP9E3l5psQjvhHYbfx8c5uHydi4HPkh_iy-s58XcCMKazXLJt/pub?gid=745166941&single=true&output=csv';
+        const CSV_COL = {
+            // アイコン
+            IMG_URL: 0,
+            // タイムスタンプ
+            TIMESTAMP: 1,
+            // 走者ID
+            PLAYER_ID: 2,
+            // 名前（投稿時）
+            NAME: 3,
+            // 記録ID
+            CLIP_ID: 4,
+            // URL
+            CLIP_URL: 5,
+            // 作品名
+            TITLE: 6,
+            // 概要
+            DESCRIPTION: 7,
+        }
+        const ALL_DUNGEONS = [
+            '利用者リスト',
+        ];
+
+        /**
+         * カテゴリ設定
+         */
+        class CategoryConfig {
+            constructor(name, rowDef, csvUrl, defaultDungeon, dungeons, extFilter, groupCols, sortCols) {
+                this.name = name;
+                /** @type {Row}*/
+                this.rowDef = rowDef;
+                this.csvUrl = csvUrl;
+                this.defaultDungeon = defaultDungeon
+                this.dungeons = dungeons;
+                this.extFilter = extFilter;
+                this.groupCols = groupCols;
+                /** @type {SortType[]} */
+                this.sortCols = sortCols;
+                this.header = null;
+                this.records = null;
+            }
+        }
+
+        /**
+         * 並び替え
+         */
+        class SortType {
+            constructor(colIdx, asc = true, conv = null) {
+                this.colIdx = colIdx;
+                this.asc = asc;
+                this.conv = conv || (e => e);
+            }
+        }
+
+        /**
+         * 記録行定義
+         */
+        class RowOption {
+            constructor(
+                pcHeadH,
+                spHeadH,
+                pcBodyH,
+                spBodyH
+            ) {
+                /** @type {number} */
+                this.pcHeaderHeight = pcHeadH;
+                /** @type {number} */
+                this.spHeaderHeight = spHeadH;
+                /** @type {number} */
+                this.pcBodyHeight = pcBodyH;
+                /** @type {number} */
+                this.spBodyHeight = spBodyH;
+            }
+        }
+        class Row {
+            /**
+             * @param {Col[]} cols
+             * @param {RowOption} option
+             */
+            constructor(cols, option = null) {
+                /** @type {Col[]} */
+                this.cols = cols;
+                /** @type {RowOption} */
+                this.option = option;
+            }
+
+            /**
+             * ヘッダ
+             */
+            outHeader(regulationName, dungeonName, headerNames) {
+                const headerTxts = this.cols.map(c => {
+                    const name = c.name || headerNames[c.colSelector(regulationName, dungeonName)];
+                    return `<div class="d ${c.className}">${name}</div>`;
+                }).join('');
+                return `<div class="row header">${headerTxts}</div>`
+            }
+            /**
+             * ボディ
+             */
+            outValue(regulationName, dungeonName, vals, addClass, rowIdx) {
+                const colVals = this.cols
+                    .map(c => {
+                        const colIdx = c.colSelector(regulationName, dungeonName);
+                        return c.out(vals[colIdx], vals, rowIdx);
+                    })
+                    .join('');
+                return `<div class="row ${addClass}">${colVals}</div>`;
+            }
+            /**
+             * スタイル
+             */
+            createStyle() {
+
+                // デフォルトスタイル（≒PC表示用）
+                let left = 0;
+                let pcStyle = this.cols.map((c, i) => {
+                    const pos = this.cols[i - 1]?.pcSizePos;
+                    left = pos
+                        ? pos.left > 0
+                            ? Math.max(pos.left + pos.width, left)
+                            : left + pos.width
+                        : 0;
+                    return `.${c.className.split(' ').join('.')} {${c.pcSizePos.outStyle(`${left}`)}}`;
+                }).join("\n");
+                pcStyle += [
+                    this.option?.pcHeaderHeight ? `#recordsHeader .row.header { height:${this.option?.pcHeaderHeight}px; }` : '',
+                    this.option?.pcBodyHeight ? `#records .row { height:${this.option?.pcBodyHeight}px; }` : ''
+                ].join("\n");
+
+                // 画面幅小スタイル（≒スマホ表示用）
+                left = 0;
+                let spStyle = this.cols.map((c, i) => {
+                    const pos = this.cols[i - 1]?.spSizePos;
+                    left = pos
+                        ? pos.left > 0
+                            ? Math.max(pos.left + pos.width, left)
+                            : left + pos.width
+                        : 0;
+                    return `.${c.className.split(' ').join('.')} {${c.spSizePos.outStyle(`${left}`)}}`;
+                }).join("\n");
+                spStyle += [
+                    this.option?.spHeaderHeight ? `#recordsHeader .row.header { height:${this.option?.spHeaderHeight}px; }` : '',
+                    this.option?.spBodyHeight ? `#records .row { height:${this.option?.spBodyHeight}px; }` : ''
+                ].join("\n");
+
+                return `
+                    ${pcStyle}
+                    @media screen and (max-width: 768px) {
+                        ${spStyle}
+                    }
+                `;
+            }
+        }
+
+        /**
+         * 記録カラム定義
+         */
+        class Col {
+            constructor(name, className, colSelector, pcSizePos, spSizePos, valueFormatter = null) {
+                // 表示文字
+                this.name = name;
+                // 設定クラス
+                this.className = className;
+                // CSV行データ配列からデータを抽出する処理
+                this.colSelector = colSelector;
+                // PC画面でのサイズ定義
+                this.pcSizePos = pcSizePos;
+                // スマホ画面でのサイズ定義
+                this.spSizePos = spSizePos;
+                // HTML出力処理
+                this.valOut = valueFormatter || ((val) => val);
+                this.out = ((val, allVal, rowIdx) => `<div class="d ${this.className}">${this.valOut(val, allVal, rowIdx)}</div>`);
+            }
+        }
+
+        /**
+         * カラム位置情報
+         */
+        class ColPos {
+            /**
+             * @param {number} width 幅（%）
+             * @param {number} height 高さ（%）
+             * @param {number} left X座標（%）
+             * @param {number} top Y座標（%）
+             */
+            constructor(width, height, left, top) {
+                this.width = width;
+                this.left = left;
+                this.top = top;
+                this.height = height;
+            }
+            outStyle(defaultLeft) {
+                if (this.width <= 0 && (!this.height || this.height <= 0)) {
+                    return "display:none";
+                } else {
+                    return `
+                        top: ${this.top ?? 0}%;
+                        left: ${this.left ?? defaultLeft}%;
+                        width: ${this.width}%;
+                        ${this.height ? 'height:' + this.height + '%' : ''}
+                    `;
+                }
+            }
+        }
+
+        /**
+         * レイアウト一覧
+         */
+        const LAUOUTS = {
+            // レイアウト：利用者
+            ROW_DEF_ALL: new Row([
+                new Col("クリップID", "rec-id", (r, d) => CSV_COL.CLIP_ID, new ColPos(10), new ColPos(40, 20, 20, 0)),
+                new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10), new ColPos(20, 100, 0, 0), (val) => val ? `<img src="${val}"></img>` : ''),
+                new Col("利用者ID", "runner", (r, d) => CSV_COL.PLAYER_ID, new ColPos(15, 15), new ColPos(40, 20, 60, 0)),
+                new Col("名前", "date", (r, d) => CSV_COL.NAME, new ColPos(65, 15), new ColPos(80, 20, 20, 20)),
+                new Col("タイトル", "time-igt", (r, d) => CSV_COL.CLIP_URL, new ColPos(80, 25, 20, 15), new ColPos(80, 20, 20, 40), (val, all) => val ? `<a href="${val}" target="_blank">${all[CSV_COL.TITLE]}</a>` : ''),
+                new Col("概要", "comment", (r, d) => CSV_COL.DESCRIPTION, new ColPos(80, 60, 20, 40), new ColPos(80, 40, 20, 60)),
+            ], new RowOption(100, 100, 200, 180)),
+        }
+
+        /**
+         * レギュ一覧
+         */
+        const REGURATIONS = [
+            new CategoryConfig("全記録", LAUOUTS.ROW_DEF_ALL, CSV_DATA_URL, '利用者リスト', ALL_DUNGEONS, null, [], [new SortType(CSV_COL.REC_ID)]),
+        ];
+
+        /**
+         * ソート用比較
+         * @param {SortType[]} sortCols
+         */
+        function compare(r1, r2, sortCols) {
+            for (const c of sortCols) {
+                const v1 = c.conv(r1[c.colIdx]);
+                const v2 = c.conv(r2[c.colIdx]);
+                if (v1 == v2) {
+                    continue;
+                } else {
+                    return c.asc
+                        ? v1 < v2 ? -1 : 1
+                        : v1 > v2 ? -1 : 1
+                }
+            }
+        };
+
+        /**
+         * グループ化
+         */
+        function grouping(records, groupCols) {
+            const groupingRec = records.reduce((acc, rec) => {
+                let key = groupCols.map(k => rec[k]).join("-");
+                if (!acc[key]) {
+                    acc[key] = []
+                }
+                acc[key].push(rec);
+                return acc;
+            }, {});
+            return Object.values(groupingRec).map(recs => recs[0]);
+        }
+
+        /**
+         * CSVデータ取得
+         */
+        async function fetchCsv(csvUrl, cache) {
+            if (cache?.[csvUrl]) {
+                return cache[csvUrl];
+            }
+            const res = await fetch(csvUrl);
+            const text = await res.text();
+            const csvArray = text.split("\r\n").map(r => txtToArray(r));
+            cache[csvUrl] = csvArray;
+            return csvArray;
+        }
+        /**
+         * CSV行読込 ※Googleスプシの仕様上改行やカンマが含まれるときに"が付く様子
+         */
+        function txtToArray(txt) {
+            const seps = [-1];
+            let quotes = false;
+            Array.from(txt).forEach((v, i) => {
+                if (v == "\"") {
+                    quotes = !quotes;
+                } else if (v == "," && !quotes) {
+                    seps.push(i);
+                }
+            });
+            let resultArray = [];
+            seps.forEach((v, i) => {
+                const part = i < (seps.length - 1)
+                    ? txt.substring(v + 1, seps[i + 1])
+                    : txt.substring(v + 1);
+                resultArray.push(part);
+            });
+            return resultArray;
+        };
+
+        /**
+         * エスケープ
+         */
+        function escapeHtml(str) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            };
+            return `${str}`.replace(/[&<>"']/g, match => map[match]);
+        };
+
+        /**
+         * 読み込み時イベント
+         */
+        const onload = async () => {
+            try {
+                // 画面各要素
+                const main = document.querySelector('#records');
+                const recordsHeader = document.querySelector('#recordsHeader');
+                const dungeonSelect = document.querySelector('#dungeons');
+                const regulationsSelect = document.querySelector('#regulations');
+                const recordStyle = document.querySelector('#recordStyle');
+
+                // イベント設定
+                regulationsSelect.addEventListener('change', () => changeRegulation(regulationsSelect.value));
+                dungeonSelect.addEventListener('change', () => loadRecords(currentConfig, dungeonSelect.value));
+
+                // レギュ一覧出力
+                regulationsSelect.innerHTML = REGURATIONS.map(c => `<option>${c.name}</option>`).join("");
+
+                // レギュ変更処理
+                let currentConfig = REGURATIONS[0];
+                const changeRegulation = async (name) => {
+                    const conf = REGURATIONS.find(c => c.name == name);
+                    if (conf) {
+                        main.innerHTML = '<div class="now-loading">読込中</div>';
+                        recordsHeader.innerHTML = "";
+                        dungeonSelect.value = "";
+                        currentConfig = conf;
+                        if (!currentConfig.records) {
+                            const res = await fetch(currentConfig.csvUrl);
+                            const text = await res.text();
+                            const csvArray = text.split("\r\n").map(r => txtToArray(r)).splice(1).filter(r => !currentConfig.extFilter || currentConfig.extFilter(r));
+                            currentConfig.header = csvArray[0];
+                            currentConfig.records = csvArray.slice(0);
+                        }
+                        dungeonSelect.innerHTML = currentConfig.dungeons
+                            .map(d => {
+                                const records = currentConfig.groupCols?.length > 0
+                                    ? grouping(currentConfig.records, currentConfig.groupCols)
+                                    : currentConfig.records
+                                const count = `${records.length}`.padStart(3, "_");
+                                return `<option value="${d}">${count}:${d}</option>`;
+                            })
+                            .join("");
+                        dungeonSelect.value = currentConfig.defaultDungeon;
+
+                        recordStyle.innerHTML = currentConfig.rowDef.createStyle();
+                        loadRecords(currentConfig);
+                    }
+                }
+
+                // ダンジョン変更処理
+                /**
+                 * @param {CategoryConfig} config
+                 */
+                const loadRecords = async (config, targetDungeonName = null) => {
+                    const regulationName = config.name;
+                    const rowDef = config.rowDef;
+                    const dungeonName = targetDungeonName || config.defaultDungeon;
+                    const records = config.groupCols?.length > 0
+                        ? grouping(
+                            config.records.sort((r1, r2) => compare(r1, r2, config.sortCols)),
+                            config.groupCols
+                        )
+                        : config.records.sort((r1, r2) => compare(r1, r2, config.sortCols));
+                    const recordsHtml = records
+                        .map((r, i) => rowDef.outValue(regulationName, dungeonName, r, (i % 2 == 0 ? 'row-odd' : ''), i))
+                        .join("");
+                    const header = rowDef.outHeader(regulationName, dungeonName, currentConfig.header);
+                    recordsHeader.innerHTML = header;
+                    main.innerHTML = recordsHtml;
+                }
+
+                // 初期表示
+                regulationsSelect.value = currentConfig.name;
+                await changeRegulation(currentConfig.name);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        window.onload = onload;
+    </script>
+</head>
+
+<body>
+    <header>
+        <div class="select-box">
+            <div class="header-panel">カテゴリ選択</div>
+            <div class="header-panel">ダンジョン選択</div>
+            <select id='regulations'></select>
+            <select id='dungeons'></select>
+        </div>
+        <div id='recordsHeader'></div>
+    </header>
+    <main>
+        <div id="records"></div>
+    </main>
+    <style id="recordStyle">
+
+    </style>
+</body>
+
+</html>
