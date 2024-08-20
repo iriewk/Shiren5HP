@@ -12,7 +12,7 @@
         }
 
         body {
-            background-color: rgb(50, 10, 0);
+            background-color: rgb(20, 10, 0);
         }
 
         input {
@@ -25,6 +25,7 @@
             width: 100%;
             max-height: 80px;
             max-width: 80px;
+            filter: drop-shadow(3px 2px 4px #000055);
         }
 
         select.half {
@@ -45,7 +46,7 @@
         header {
             max-width: 1000px;
             width: 100vw;
-            background-color: rgb(50, 10, 0);
+            background-color: rgb(20, 10, 0);
             position: sticky;
             width: 100vw;
             top: 0px;
@@ -105,9 +106,9 @@
 
         .d {
             position: absolute;
-            border-bottom: solid 1px rgb(220, 160, 125);
-            border-right: solid 1px rgb(220, 160, 125);
-            border-left: solid 1px rgb(220, 160, 125);
+            /* border-bottom: solid 1px rgb(220, 160, 125);*/
+            /*border-right: solid 1px rgb(220, 160, 125);*/
+            /*border-left: solid 1px rgb(220, 160, 125);*/
             overflow-wrap: anywhere;
             width: 9.5%;
             height: 100%;
@@ -117,13 +118,23 @@
             font-weight: bold;
         }
 
+        .d.runner {
+            font-size: 1.5em;
+        }
+
         .row {
             height: 80px;
             width: 96%;
+            background: linear-gradient(315deg, rgba(2,0,36,1) 0%, rgba(121,9,9,1) 59%, rgba(0,212,255,0) 100%);
         }
 
         .comment {
             overflow-y: auto;
+        }
+
+        option.no-rec {
+            color: gray;
+            background-color: black;
         }
 
         @media screen and (max-width: 768px) {
@@ -196,19 +207,32 @@
             '魃の砂丘',
             '水龍の洞窟',
             'ヤマカガシ峠',
-            '鬼木島',
-            '推測の修験道',
-            '推測の修験道 裏',
-            '桃まんダンジョン',
-            'ドスコイダンジョン',
-            'カカ・ルーの神意',
-            '罠師の抜け道',
-            '仕掛けの修験道',
-            '買い物上手の修験道',
-            'デッ怪ラッシュ',
-            '神器の海廊',
-            '杖と巻物の領域',
-            '無双の島',
+            '鬼木島(25F)',
+            '鬼木島(99F)',
+            '推測の修験道(20F)',
+            '推測の修験道(50F)',
+            '推測の修験道 裏(20F)',
+            '推測の修験道 裏(50F)',
+            'ドスコイダンジョン(20F)',
+            'ドスコイダンジョン(99F)',
+            'カカ・ルーの神意(10F)',
+            'カカ・ルーの神意(99F)',
+            '罠師の抜け道(20F)',
+            '罠師の抜け道(99F)',
+            '仕掛けの修験道(20F)',
+            '仕掛けの修験道(50F)',
+            '買い物上手の修験道(40F)',
+            '買い物上手の修験道(99F)',
+            'デッ怪ラッシュ(30F)',
+            'デッ怪ラッシュ(99F)',
+            '神器の海廊(15F)',
+            '神器の海廊(99F)',
+            '杖と巻物の領域(20F)',
+            '杖と巻物の領域(50F)',
+            '無双の島(50F)',
+            '無双の島(99F)',
+            '桃まんダンジョン(25F)',
+            '桃まんダンジョン(99F)',
             'とぐろ島の神髄',
             'とぐろ島の神髄（裏）',
         ];
@@ -403,11 +427,11 @@
             ROW_DEF_TA: new Row([
                 new Col("順位", "rank", (r, d) => null, new ColPos(10), new ColPos(10, 100, 0, 0), (val, all, rowIdx) => rowIdx + 1),
                 new Col("タイム", "record", (r, d) => CSV_COL.TIME_IGT, new ColPos(10), new ColPos(23, 25, 30, 75)),
-                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 30, 20, 0), new ColPos(23, 25, 53, 75), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val}</a>` : ''),
-                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 70, 20, 30), new ColPos(24, 25, 76, 75), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 40, 20, 0), new ColPos(23, 25, 53, 75), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val}</a>` : ''),
+                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 60, 20, 40), new ColPos(24, 25, 76, 75), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
                 new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10), new ColPos(20, 75, 10, 0), (val) => val ? `<img src="${val}"></img>` : ''),
-                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(40, 30, 45, 0), new ColPos(70, 30, 30, 0)),
-                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(40, 70, 45, 30), new ColPos(70, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(40, 30, 45, 10), new ColPos(70, 30, 30, 0)),
+                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(40, 60, 45, 40), new ColPos(70, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
                 new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID, new ColPos(15), new ColPos(20, 25, 10, 75)),
             ], new RowOption(70, 70, 120, 120)),
             // レイアウト：RTA用
@@ -602,7 +626,8 @@
                     .map(d => {
                         const records = getRecords(state.currentConfig, d);
                         const count = `${records.length}`.padStart(3, "_");
-                        return `<option value="${d}">${count}：${d}</option>`;
+                        const style = records.length <= 0 ? 'no-rec': '';
+                        return `<option value="${d}" class="${style}">${count}：${d}</option>`;
                     })
                     .join("");
                 state.$dungeonSelect.value = state.currentConfig.defaultDungeon;
@@ -619,15 +644,18 @@
             const terms = state.currentConfig.terms
                 .sort().reverse()
                 .map(e => {
-                    const count = getRecords(config, targetDungeonName, e).length.toString().padStart(3, "_");
+                    const records = getRecords(config, targetDungeonName, e);
+                    const style = records.length <= 0 ? 'no-rec': '';
+                    const count = records.length.toString().padStart(3, "_");
                     const disp = `${count}：${e}`;
                     return {
                         value: e,
-                        disp: disp
+                        disp: disp,
+                        style: style
                     }
                 });
-            state.$termSelect.innerHTML = terms.map(e => `<option value="${e.value}">${e.disp}</option>`).join("");
-            state.$termSelect.value = terms.find(e => e.value != ALL_TERM).value;
+            state.$termSelect.innerHTML = terms.map(e => `<option value="${e.value}" class="${e.style}">${e.disp}</option>`).join("");
+            state.$termSelect.value = terms.find(e => e.value == ALL_TERM).value;
             loadRecords(
                 config,
                 targetDungeonName,
