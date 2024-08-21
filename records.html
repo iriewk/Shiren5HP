@@ -20,14 +20,6 @@
             width: 100%;
         }
 
-        img {
-            height: 100%;
-            width: 100%;
-            max-height: 80px;
-            max-width: 80px;
-            filter: drop-shadow(3px 2px 4px #000055);
-        }
-
         select.half {
             width: 48%;
         }
@@ -101,7 +93,7 @@
         }
 
         .row-odd {
-            background-color: rgb(80, 20, 0);
+            /* background-color: rgb(80, 20, 0); */
         }
 
         .d {
@@ -120,6 +112,24 @@
 
         .d.runner {
             font-size: 1.5em;
+        }
+        .d.rank {
+            font-size: 1.5em;
+        }
+
+        .d.icon img {
+            height: 100%;
+            width: 100%;
+            max-height: 80px;
+            max-width: 80px;
+            filter: drop-shadow(3px 2px 4px #000055);
+        }
+
+        .d.shiren img {
+            height: 100%;
+            max-height: 80px;
+            max-width: 80px;
+            filter: drop-shadow(3px 2px 4px #000055);
         }
 
         .row {
@@ -199,7 +209,14 @@
             NOTE: 12,
             // 感想
             COMMENT: 13,
+            // 使用キャラ
+            SHIREN: 14,
         }
+        const SHIREN_MAP = {
+            "シレン": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/shiren.png",
+            "枯渇シレン": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/kokatsu_shiren.png",
+            "竜海シレン": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/tatsumi_shiren.png"
+        };
         const ALL_TERM = "全期間";
         const ALL_DUNGEONS = [
             'とぐろ島（初戦撃破）',
@@ -425,48 +442,54 @@
         const LAYOUTS = {
             // レイアウト：TA用
             ROW_DEF_TA: new Row([
-                new Col("順位", "rank", (r, d) => null, new ColPos(10), new ColPos(10, 100, 0, 0), (val, all, rowIdx) => rowIdx + 1),
-                new Col("タイム", "record", (r, d) => CSV_COL.TIME_IGT, new ColPos(10), new ColPos(23, 25, 30, 75)),
-                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 40, 20, 0), new ColPos(23, 25, 53, 75), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val}</a>` : ''),
-                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 60, 20, 40), new ColPos(24, 25, 76, 75), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
-                new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10), new ColPos(20, 75, 10, 0), (val) => val ? `<img src="${val}"></img>` : ''),
-                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(40, 30, 45, 10), new ColPos(70, 30, 30, 0)),
-                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(40, 60, 45, 40), new ColPos(70, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
-                new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID, new ColPos(15), new ColPos(20, 25, 10, 75)),
+                new Col("順位", "rank", (r, d) => null, new ColPos(10),                               new ColPos(15, 85, 0, 0), (val, all, rowIdx) => rowIdx + 1),
+                new Col("タイム", "record", (r, d) => CSV_COL.TIME_IGT, new ColPos(10),               new ColPos(15, 15, 15, 85)),
+                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 30, 20, 0),       new ColPos(20, 20, 80, 10), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
+                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN, new ColPos(15, 50, 20, 30), new ColPos(20, 55, 80, 30), (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 15, 20, 80),     new ColPos(20, 15, 80, 85), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10),                new ColPos(15, 70, 15, 10), (val) => val ? `<img src="${val}"></img>` : ''),
+                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(40, 30, 45, 10),         new ColPos(50, 30, 30, 10)),
+                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(40, 60, 45, 40),  new ColPos(50, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID, new ColPos(15),                 new ColPos(15, 15, 0, 85)),
             ], new RowOption(70, 70, 120, 120)),
+
             // レイアウト：RTA用
             ROW_DEF_RTA: new Row([
-                new Col("順位", "rank", (r, d) => null, new ColPos(10), new ColPos(10, 100, 0, 0), (val, all, rowIdx) => rowIdx + 1),
-                new Col("タイム", "record", (r, d) => CSV_COL.TIME_RTA, new ColPos(10), new ColPos(23, 25, 30, 75)),
-                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 30, 20, 0), new ColPos(23, 25, 53, 75), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val}</a>` : ''),
-                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 70, 20, 30), new ColPos(24, 25, 76, 75), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
-                new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10), new ColPos(20, 75, 10, 0), (val) => val ? `<img src="${val}"></img>` : ''),
-                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(40, 30, 45, 0), new ColPos(70, 30, 30, 0)),
-                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(40, 70, 45, 30), new ColPos(70, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
-                new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID, new ColPos(15), new ColPos(20, 25, 10, 75)),
+                new Col("順位", "rank", (r, d) => null, new ColPos(10),                               new ColPos(15, 85, 0, 0), (val, all, rowIdx) => rowIdx + 1),
+                new Col("タイム", "record", (r, d) => CSV_COL.TIME_IGT, new ColPos(10),               new ColPos(15, 15, 15, 85)),
+                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 30, 20, 0),       new ColPos(20, 20, 80, 10), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
+                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN, new ColPos(15, 50, 20, 30), new ColPos(20, 55, 80, 30), (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 15, 20, 80),     new ColPos(20, 15, 80, 85), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10),                new ColPos(15, 70, 15, 10), (val) => val ? `<img src="${val}"></img>` : ''),
+                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(40, 30, 45, 10),         new ColPos(50, 30, 30, 10)),
+                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(40, 60, 45, 40),  new ColPos(50, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID, new ColPos(15),                 new ColPos(15, 15, 0, 85)),
             ], new RowOption(70, 70, 120, 120)),
+
             // レイアウト：歩数用
             ROW_DEF_TURN: new Row([
-                new Col("順位", "rank", (r, d) => null, new ColPos(10), new ColPos(10, 100, 0, 0), (val, all, rowIdx) => rowIdx + 1),
-                new Col("ターン数", "record", (r, d) => CSV_COL.TURN, new ColPos(10), new ColPos(23, 25, 30, 75)),
-                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 30, 20, 0), new ColPos(23, 25, 53, 75), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val}</a>` : ''),
-                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 70, 20, 30), new ColPos(24, 25, 76, 75), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
-                new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10), new ColPos(20, 75, 10, 0), (val) => val ? `<img src="${val}"></img>` : ''),
-                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(40, 30, 45, 0), new ColPos(70, 30, 30, 0)),
-                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(40, 70, 45, 30), new ColPos(70, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
-                new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID, new ColPos(15), new ColPos(20, 25, 10, 75)),
+                new Col("順位", "rank", (r, d) => null, new ColPos(10),                               new ColPos(15, 85, 0, 0), (val, all, rowIdx) => rowIdx + 1),
+                new Col("ターン数", "record", (r, d) => CSV_COL.TURN, new ColPos(10),               new ColPos(15, 15, 15, 85)),
+                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 30, 20, 0),       new ColPos(20, 20, 80, 10), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
+                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN, new ColPos(15, 50, 20, 30), new ColPos(20, 55, 80, 30), (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 15, 20, 80),     new ColPos(20, 15, 80, 85), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10),                new ColPos(15, 70, 15, 10), (val) => val ? `<img src="${val}"></img>` : ''),
+                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(40, 30, 45, 10),         new ColPos(50, 30, 30, 10)),
+                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(40, 60, 45, 40),  new ColPos(50, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID, new ColPos(15),                 new ColPos(15, 15, 0, 85)),
             ], new RowOption(70, 70, 120, 120)),
             // レイアウト：全記録用
             ROW_DEF_ALL: new Row([
-                new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID, new ColPos(10), new ColPos(40, 15, 20, 70)),
-                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 30, 10, 0), new ColPos(40, 15, 60, 70), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val}</a>` : ''),
-                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 70, 10, 30), new ColPos(40, 15, 60, 70), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
-                new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10), new ColPos(20, 100, 0, 0), (val) => val ? `<img src="${val}"></img>` : ''),
-                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(35, 30, 35, 0), new ColPos(80, 30, 20, 0)),
-                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(35, 70, 35, 30), new ColPos(80, 40, 20, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
-                new Col("IGT", "time-igt", (r, d) => CSV_COL.TIME_IGT, new ColPos(10), new ColPos(27, 15, 20, 85)),
-                new Col("RTA", "time-rta", (r, d) => CSV_COL.TIME_RTA, new ColPos(10), new ColPos(27, 15, 47, 85)),
-                new Col("ターン数", "turn", (r, d) => CSV_COL.TURN, new ColPos(10), new ColPos(26, 15, 74, 85)),
+                new Col("RTA", "time-rta", (r, d) => CSV_COL.TIME_RTA, new ColPos(20, 20, 0, 10),    new ColPos(15, 15, 15, 85), (val) => val || "--:--:--"),
+                new Col("IGT", "time-igt", (r, d) => CSV_COL.TIME_IGT, new ColPos(20, 20, 0, 35),    new ColPos(15, 15, 15, 85), (val) => val || "--:--:--"),
+                new Col("ターン数", "record", (r, d) => CSV_COL.TURN,  new ColPos(20, 20, 0, 60),     new ColPos(15, 15, 15, 85), (val) => val || "--"),
+                new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP, new ColPos(15, 30, 20, 0),       new ColPos(20, 20, 80, 10), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
+                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN, new ColPos(15, 50, 20, 30), new ColPos(20, 55, 80, 30), (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL, new ColPos(15, 15, 20, 80),     new ColPos(20, 15, 80, 85), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL, new ColPos(10, 100, 35, 0),    new ColPos(15, 70, 15, 10), (val) => val ? `<img src="${val}"></img>` : ''),
+                new Col("走者", "runner", (r, d) => CSV_COL.NAME, new ColPos(40, 30, 45, 10),         new ColPos(50, 30, 30, 10)),
+                new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT, new ColPos(40, 60, 45, 40),  new ColPos(50, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID, new ColPos(15),                 new ColPos(15, 15, 0, 85)),
             ], new RowOption(70, 100, 120, 180))
         }
 
@@ -554,23 +577,12 @@
          * CSV行読込 ※Googleスプシの仕様上改行やカンマが含まれるときに"が付く様子
          */
         function txtToArray(txt) {
-            const seps = [-1];
-            let quotes = false;
-            Array.from(txt).forEach((v, i) => {
-                if (v == "\"") {
-                    quotes = !quotes;
-                } else if (v == "," && !quotes) {
-                    seps.push(i);
-                }
-            });
-            let resultArray = [];
-            seps.forEach((v, i) => {
-                const part = i < (seps.length - 1)
-                    ? txt.substring(v + 1, seps[i + 1])
-                    : txt.substring(v + 1);
-                resultArray.push(part);
-            });
-            return resultArray;
+            // ダブルクォーテーションで囲まれていないカンマで分割
+            const regex = /,(?=(?:[^"]*"[^"]*")*[^"]*$)/g;
+            const items = txt.split(regex);
+            // 各要素の両端のダブルクォーテーションを削除
+            const result = items.map(item => item.replace(/^"|"$/g, ''));
+            return result;
         };
 
         /**
