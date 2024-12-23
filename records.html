@@ -13,6 +13,7 @@
 
         body {
             background-color: rgb(20, 10, 0);
+            overflow-y: scroll;
         }
 
         input {
@@ -20,15 +21,29 @@
             width: 100%;
         }
 
-        select.half {
+        header button.one-eighth,
+        header select.one-eighth {
+            width: 12%;
+        }
+
+        header button.quater,
+        header select.quater {
+            width: 24%;
+        }
+
+        header button.half,
+        header select.half {
             width: 48%;
         }
 
-        select.full {
+
+        header button.full,
+        header select.full {
             width: 96%;
         }
 
-        select {
+        header button,
+        header select {
             height: 5vh;
             font-weight: bold;
             background-color: rgb(85, 10, 10);
@@ -63,6 +78,83 @@
         }
 
         main #records {
+            width: 100%;
+        }
+
+        main #gearWall {
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            width: 95vw;
+            height: 100vh;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            visibility: hidden;
+        }
+
+        main #gearWall * {
+            background: linear-gradient(315deg, rgba(2, 0, 36, 1) 0%, rgba(121, 9, 9, 1) 59%, rgba(0, 5, 50, 1) 100%);
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        button:hover,
+        button.inactive:hover,
+        main #gearWall button.inactive:hover,
+        main #gearWall button.active:hover,
+        main #gearWall button:hover {
+            background: linear-gradient(315deg, rgb(150, 148, 177) 0%, rgba(121, 9, 9, 1) 59%, rgba(150, 148, 177) 100%);
+        }
+
+        button.inactive {
+            background: linear-gradient(315deg, rgb(42, 42, 49) 0%, rgb(75, 5, 5) 59%, rgb(45, 44, 53) 100%);
+            color: rgba(250, 250, 250, 0.3);
+        }
+
+        main #gearWall .gear-main {
+            border: solid 2px rgba(255, 255, 200, 0.5);
+            overflow-y: auto;
+            padding: 2px;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            left: 10%;
+            width: 99vw;
+            height: 90vh;
+            max-width: 800px;
+            max-height: 800px;
+        }
+
+        main #gearWall .gear-header {
+            width: 100%;
+            display: grid;
+            direction: rtl;
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        main #gearWall .gear-select {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(1, 1fr);
+        }
+
+        main #gearWall .gear-main .weapons .conditions,
+        main #gearWall .gear-main .shields .conditions,
+        main #gearWall .gear-main .bracelets .conditions {
+            border: solid 2px rgba(255, 255, 200, 0.5);
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(25, 1fr);
+        }
+
+        main #gearWall .gear-main .label {
+            background: linear-gradient(315deg, rgba(2, 0, 36, 1) 0%, rgb(78, 77, 6) 59%, rgba(0, 5, 50, 1) 100%);
+            font-weight: bold;
+        }
+
+        main #gearWall .gear-main .all-select,
+        main #gearWall .gear-main .no-select {
             width: 100%;
         }
 
@@ -110,10 +202,7 @@
             font-weight: bold;
         }
 
-        .d.runner {
-            font-size: 1.5em;
-        }
-
+        .d.runner,
         .d.rank {
             font-size: 1.5em;
         }
@@ -127,15 +216,38 @@
         }
 
         .d.rec-id,
-        .d.weapon,
-        .d.shield,
+        .d.video,
+        .d.date,
         .d.power,
         .d.gitan,
         .d.level,
+        .d.weapon,
+        .d.shield,
         .d.bracelet1,
         .d.bracelet2,
         .d.hp,
         .d.enemies {
+            text-align: left;
+            font-size: 0.8em;
+        }
+
+        .row.header .d.runner,
+        .row.header .d.rank {
+            font-size: 1.0em;
+        }
+
+        .row.header .d.rec-id,
+        .row.header .d.video,
+        .row.header .d.date,
+        .row.header .d.weapon,
+        .row.header .d.shield,
+        .row.header .d.power,
+        .row.header .d.gitan,
+        .row.header .d.level,
+        .row.header .d.bracelet1,
+        .row.header .d.bracelet2,
+        .row.header .d.hp,
+        .row.header .d.enemies {
             font-size: 0.8em;
         }
 
@@ -183,6 +295,18 @@
                 background-color: rgba(0, 30, 0);
                 color: rgb(240, 240, 130);
                 border: solid 1px rgba(80, 120, 80);
+            }
+
+            main #gearWall .gear-select {
+                grid-template-columns: repeat(1, 1fr);
+                grid-template-rows: repeat(3, 1fr);
+            }
+
+            main #gearWall .gear-main .weapons .conditions,
+            main #gearWall .gear-main .shields .conditions,
+            main #gearWall .gear-main .bracelets .conditions {
+                grid-template-columns: repeat(5, 1fr);
+                grid-template-rows: repeat(10, 1fr);
             }
         }
 
@@ -253,10 +377,133 @@
             // ギタン
             GITAN: 27
         }
+        const UNKNOWN = '--(不明)';
+        const WEAPON_NAMES = [
+            '青銅の太刀',
+            'カタナ',
+            'どうたぬき',
+            '剛剣マンジカブラ',
+            '火迅風魔刀',
+            '秘剣カブラステギ',
+            '金の剣',
+            '妖刀かまいたち',
+            'ミノタウロスの斧',
+            '必中の剣',
+            '連撃刀',
+            '水斬りの剣',
+            '原始の斧',
+            'ドラゴンキラー',
+            '三日月刀',
+            '空の刃',
+            '成仏のカマ',
+            'ドレインバスター',
+            '一ツ目殺し',
+            '斬鉄剣',
+            '巨大ハリセン',
+            '回復の剣',
+            '桃まん棒',
+            '金食い虫こん棒',
+            '鉄塊の大剣',
+            'ステーキナイフ',
+            'スパークソード',
+            '四ツ叉',
+            'めでたい熊手',
+            'つるはし',
+            '黄金のつるはし',
+            '木づち',
+            '最強ハンマー',
+            '罠探りの棒',
+            'かつおぶし',
+            '山姥包丁',
+            '使い捨て刀',
+            'なし',
+            UNKNOWN
+        ];
+        const SHIELD_NAMES = [
+            '木甲の盾',
+            '青銅甲の盾',
+            '鉄甲の盾',
+            'おにおおかみ',
+            '風魔の盾',
+            '螺旋風魔の盾',
+            '金の盾',
+            'バトルカウンター',
+            '見切りの盾',
+            'ドラゴンシールド',
+            '爆発隠の盾',
+            'ミノタウロスの盾',
+            'トドよけの盾',
+            'ガマラよけの盾',
+            'いたずらよけの盾',
+            'にぎりよけの盾',
+            'オトトの盾',
+            'カッパのお皿',
+            'ゲイズの盾',
+            '魔法よけの盾',
+            '不動の盾',
+            'ざぶとん',
+            '金食い虫の盾',
+            '鉄塊の大盾',
+            'ステーキプレート',
+            '根性の盾',
+            '絶好調の盾',
+            'サトリの盾',
+            'ハラモチの盾',
+            'めでたい御守',
+            'お告げの盾',
+            '山姥の鍋ぶた',
+            '使い捨ての盾',
+            'なし',
+            UNKNOWN
+        ];
+        const BRACELET_NAMES = [
+            '回復の腕輪',
+            'ちからの腕輪',
+            '胃拡張の腕輪',
+            '胃縮小の腕輪',
+            'しあわせの腕輪',
+            '毒消しの腕輪',
+            '混乱よけの腕輪',
+            '睡眠よけの腕輪',
+            '錆よけの腕輪',
+            '呪いよけの腕輪',
+            '弾きよけの腕輪',
+            '遠投の腕輪',
+            'ヘタ投げの腕輪',
+            '百発百中の腕輪',
+            'ボヨヨンの腕輪',
+            '連射の腕輪',
+            '諸刃の腕輪',
+            '痛恨の腕輪',
+            '高飛びの腕輪',
+            '爆発の腕輪',
+            '透視の腕輪',
+            '気配察知の腕輪',
+            '道具感知の腕輪',
+            '裏道の腕輪',
+            '水グモの腕輪',
+            '浮遊の腕輪',
+            '壁抜けの腕輪',
+            '忍び足の腕輪',
+            'すれちがいの腕輪',
+            '垂れ流しの腕輪',
+            '金垂れ流しの腕輪',
+            '魔物呼びの腕輪',
+            '罠増しの腕輪',
+            '値切りの腕輪',
+            '罠師の腕輪',
+            '鑑定師の腕輪',
+            '大砲強化の腕輪',
+            'なし',
+            '未識別',
+            UNKNOWN
+        ];
         const SHIREN_MAP = {
             "シレン": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/shiren.png",
-            "枯渇シレン": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/kokatsu_shiren.png",
-            "竜海シレン": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/tatsumi_shiren.png"
+            "狐渇シレン": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/kokatsu_shiren.png",
+            "竜海シレン": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/tatsumi_shiren.png",
+            "コッパ": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/koppa.png",
+            "アスカ": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/asuka.png"
         };
         const ALL_TERM = "全期間";
         const ALL_DUNGEONS = [
@@ -473,7 +720,7 @@
                 // PC画面でのサイズ定義
                 this.pcSizePos = pcSizePos;
                 // スマホ画面でのサイズ定義
-                this.spSizePos = spSizePos;
+                this.spSizePos = spSizePos || pcSizePos;
                 // HTML出力処理
                 this.valOut = valueFormatter || ((val) => val);
                 this.out = ((val, allVal, rowIdx) => `<div class="d ${this.className}">${this.valOut(val, allVal, rowIdx)}</div>`);
@@ -517,176 +764,178 @@
             // レイアウト：TA用
             ROW_DEF_TA: new Row([
                 new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID,
-                    new ColPos(10, 10, 0, 0), new ColPos(15, 15, 0, 85)),
-                new Col("順位", "rank", (r, d) => null,
-                    new ColPos(10, 90, 0, 10), new ColPos(15, 85, 0, 0), (val, all, rowIdx) => rowIdx + 1),
-                new Col("タイム", "record", (r, d) => CSV_COL.TIME_IGT,
-                    new ColPos(10, 100, 10, 0), new ColPos(15, 15, 15, 85)),
+                    new ColPos(10, 10, 0, 0)),
                 new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP,
-                    new ColPos(15, 30, 20, 0), new ColPos(20, 20, 80, 10), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
-                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
-                    new ColPos(15, 50, 20, 20), new ColPos(20, 55, 80, 30), (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                    new ColPos(10, 10, 10, 0), null, (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
+                new Col("順位", "rank", (r, d) => null,
+                    new ColPos(10, 90, 0, 10), null, (val, all, rowIdx) => rowIdx + 1),
                 new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL,
-                    new ColPos(15, 20, 20, 60), new ColPos(20, 15, 80, 85), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                    new ColPos(10, 10, 20, 0), null, (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("タイム", "record", (r, d) => CSV_COL.TIME_IGT,
+                    new ColPos(10, 90, 10, 10)),
                 new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL,
-                    new ColPos(10, 100, 35, 0), new ColPos(15, 70, 15, 10), (val) => val ? `<img src="${val}"></img>` : ''),
-                new Col("走者", "runner", (r, d) => CSV_COL.NAME,
-                    new ColPos(55, 20, 45, 10), new ColPos(50, 30, 30, 10)),
+                    new ColPos(10, 60, 20, 20), null, (val) => val ? `<img src="${val}"></img>` : ''),
+                new Col("お名前", "runner", (r, d) => CSV_COL.NAME,
+                    new ColPos(20, 70, 30, 10)),
                 new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT,
-                    new ColPos(55, 40, 45, 40), new ColPos(50, 40, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                    new ColPos(35, 70, 50, 10), null, (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
+                    new ColPos(15, 70, 85, 10), null, (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
 
                 new Col("LV", "level", (r, d) => CSV_COL.LEVEL,
-                    new ColPos(10, 10, 45, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 35, 80), null, (val) => `Lv ${val || '--'}`),
                 new Col("HP", "hp", (r, d) => CSV_COL.HP,
-                    new ColPos(10, 10, 45, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 35, 90), null, (val) => `HP ${val || '--/--'}`),
                 new Col("倒した敵の数", "enemies", (r, d) => CSV_COL.ENEMIES,
-                    new ColPos(10, 10, 55, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 45, 80), null, (val) => `${val || '---'}体`),
                 new Col("武器", "weapon", (r, d) => CSV_COL.WEAPON_NAME,
-                    new ColPos(15, 10, 65, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 55, 80), null, (val, all) => `${val || '--'}${all[CSV_COL.WEAPON_PLUS]}`),
                 new Col("盾", "shield", (r, d) => CSV_COL.SHIELD_NAME,
-                    new ColPos(15, 10, 65, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 55, 90), null, (val, all) => `${val || '--'}${all[CSV_COL.SHIELD_PLUS]}`),
                 new Col("腕輪1", "bracelet1", (r, d) => CSV_COL.BRACELET1,
-                    new ColPos(15, 10, 80, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 70, 80), null, (val, all) => val || '--'),
                 new Col("腕輪2", "bracelet2", (r, d) => CSV_COL.BRACELET2,
-                    new ColPos(15, 10, 80, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 70, 90), null, (val, all) => val || '--'),
                 new Col("ちから", "power", (r, d) => CSV_COL.POWER,
-                    new ColPos(10, 10, 90, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 85, 80), null, (val) => `${val || '--/--'}`),
                 new Col("ギタン", "gitan", (r, d) => CSV_COL.GITAN,
-                    new ColPos(10, 10, 90, 90), new ColPos(15, 15, 0, 85)),
-            ], new RowOption(90, 90, 150, 150)),
+                    new ColPos(15, 10, 85, 90), null, (val) => `${val || '----'}G`),
+            ], new RowOption(80, 80, 170, 170)),
 
             // レイアウト：RTA用
             ROW_DEF_RTA: new Row([
                 new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID,
-                    new ColPos(10, 10, 0, 0), new ColPos(15, 15, 0, 85)),
-                new Col("順位", "rank", (r, d) => null,
-                    new ColPos(10, 90, 0, 10), new ColPos(15, 85, 0, 0), (val, all, rowIdx) => rowIdx + 1),
-                new Col("タイム", "record", (r, d) => CSV_COL.TIME_RTA,
-                    new ColPos(10, 100, 10, 0), new ColPos(15, 15, 15, 85)),
+                    new ColPos(10, 10, 0, 0)),
                 new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP,
-                    new ColPos(15, 30, 20, 0), new ColPos(20, 20, 80, 10), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
-                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
-                    new ColPos(15, 50, 20, 20), new ColPos(20, 55, 80, 30), (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                    new ColPos(10, 10, 10, 0), null, (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
+                new Col("順位", "rank", (r, d) => null,
+                    new ColPos(10, 90, 0, 10), null, (val, all, rowIdx) => rowIdx + 1),
                 new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL,
-                    new ColPos(15, 20, 20, 60), new ColPos(20, 15, 80, 85), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                    new ColPos(10, 10, 20, 0), null, (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("タイム", "record", (r, d) => CSV_COL.TIME_RTA,
+                    new ColPos(10, 90, 10, 10)),
                 new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL,
-                    new ColPos(10, 100, 35, 0), new ColPos(15, 70, 15, 10), (val) => val ? `<img src="${val}"></img>` : ''),
-                new Col("走者", "runner", (r, d) => CSV_COL.NAME,
-                    new ColPos(55, 20, 45, 10), new ColPos(50, 30, 30, 10)),
+                    new ColPos(10, 60, 20, 20), null, (val) => val ? `<img src="${val}"></img>` : ''),
+                new Col("お名前", "runner", (r, d) => CSV_COL.NAME,
+                    new ColPos(20, 70, 30, 10)),
                 new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT,
-                    new ColPos(55, 40, 45, 40), new ColPos(50, 40, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                    new ColPos(35, 70, 50, 10), null, (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
+                    new ColPos(15, 70, 85, 10), null, (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
 
                 new Col("LV", "level", (r, d) => CSV_COL.LEVEL,
-                    new ColPos(10, 10, 45, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 35, 80), null, (val) => `Lv ${val || '--'}`),
                 new Col("HP", "hp", (r, d) => CSV_COL.HP,
-                    new ColPos(10, 10, 45, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 35, 90), null, (val) => `HP ${val || '--/--'}`),
                 new Col("倒した敵の数", "enemies", (r, d) => CSV_COL.ENEMIES,
-                    new ColPos(10, 10, 55, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 45, 80), null, (val) => `${val || '---'}体`),
                 new Col("武器", "weapon", (r, d) => CSV_COL.WEAPON_NAME,
-                    new ColPos(15, 10, 65, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 55, 80), null, (val, all) => `${val || '--'}${all[CSV_COL.WEAPON_PLUS]}`),
                 new Col("盾", "shield", (r, d) => CSV_COL.SHIELD_NAME,
-                    new ColPos(15, 10, 65, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 55, 90), null, (val, all) => `${val || '--'}${all[CSV_COL.SHIELD_PLUS]}`),
                 new Col("腕輪1", "bracelet1", (r, d) => CSV_COL.BRACELET1,
-                    new ColPos(15, 10, 80, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 70, 80), null, (val, all) => val || '--'),
                 new Col("腕輪2", "bracelet2", (r, d) => CSV_COL.BRACELET2,
-                    new ColPos(15, 10, 80, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 70, 90), null, (val, all) => val || '--'),
                 new Col("ちから", "power", (r, d) => CSV_COL.POWER,
-                    new ColPos(10, 10, 90, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 85, 80), null, (val) => `${val || '--/--'}`),
                 new Col("ギタン", "gitan", (r, d) => CSV_COL.GITAN,
-                    new ColPos(10, 10, 90, 90), new ColPos(15, 15, 0, 85)),
-            ], new RowOption(80, 80, 150, 150)),
+                    new ColPos(15, 10, 85, 90), null, (val) => `${val || '----'}G`),
+            ], new RowOption(80, 80, 170, 170)),
 
             // レイアウト：歩数用
             ROW_DEF_TURN: new Row([
                 new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID,
-                    new ColPos(10, 10, 0, 0), new ColPos(15, 15, 0, 85)),
-                new Col("順位", "rank", (r, d) => null,
-                    new ColPos(10, 90, 0, 10), new ColPos(15, 85, 0, 0), (val, all, rowIdx) => rowIdx + 1),
-                new Col("ターン数", "record", (r, d) => CSV_COL.TURN,
-                    new ColPos(10, 100, 10, 0), new ColPos(15, 15, 15, 85)),
+                    new ColPos(10, 10, 0, 0)),
                 new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP,
-                    new ColPos(15, 30, 20, 0), new ColPos(20, 20, 80, 10), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
-                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
-                    new ColPos(15, 50, 20, 20), new ColPos(20, 55, 80, 30), (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                    new ColPos(10, 10, 10, 0), null, (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
+                new Col("順位", "rank", (r, d) => null,
+                    new ColPos(10, 90, 0, 10), null, (val, all, rowIdx) => rowIdx + 1),
                 new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL,
-                    new ColPos(15, 20, 20, 60), new ColPos(20, 15, 80, 85), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                    new ColPos(10, 10, 20, 0), null, (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("ターン数", "record", (r, d) => CSV_COL.TURN,
+                    new ColPos(10, 90, 10, 10)),
                 new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL,
-                    new ColPos(10, 100, 35, 0), new ColPos(15, 70, 15, 10), (val) => val ? `<img src="${val}"></img>` : ''),
-                new Col("走者", "runner", (r, d) => CSV_COL.NAME,
-                    new ColPos(55, 20, 45, 10), new ColPos(50, 30, 30, 10)),
+                    new ColPos(10, 60, 20, 20), null, (val) => val ? `<img src="${val}"></img>` : ''),
+                new Col("お名前", "runner", (r, d) => CSV_COL.NAME,
+                    new ColPos(20, 70, 30, 10)),
                 new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT,
-                    new ColPos(55, 40, 45, 40), new ColPos(50, 40, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                    new ColPos(35, 70, 50, 10), null, (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
+                    new ColPos(15, 70, 85, 10), null, (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
 
                 new Col("LV", "level", (r, d) => CSV_COL.LEVEL,
-                    new ColPos(10, 10, 45, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 35, 80), null, (val) => `Lv ${val || '--'}`),
                 new Col("HP", "hp", (r, d) => CSV_COL.HP,
-                    new ColPos(10, 10, 45, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 35, 90), null, (val) => `HP ${val || '--/--'}`),
                 new Col("倒した敵の数", "enemies", (r, d) => CSV_COL.ENEMIES,
-                    new ColPos(10, 10, 55, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 45, 80), null, (val) => `${val || '---'}体`),
                 new Col("武器", "weapon", (r, d) => CSV_COL.WEAPON_NAME,
-                    new ColPos(15, 10, 65, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 55, 80), null, (val, all) => `${val || '--'}${all[CSV_COL.WEAPON_PLUS]}`),
                 new Col("盾", "shield", (r, d) => CSV_COL.SHIELD_NAME,
-                    new ColPos(15, 10, 65, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 55, 90), null, (val, all) => `${val || '--'}${all[CSV_COL.SHIELD_PLUS]}`),
                 new Col("腕輪1", "bracelet1", (r, d) => CSV_COL.BRACELET1,
-                    new ColPos(15, 10, 80, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 70, 80), null, (val, all) => val || '--'),
                 new Col("腕輪2", "bracelet2", (r, d) => CSV_COL.BRACELET2,
-                    new ColPos(15, 10, 80, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 70, 90), null, (val, all) => val || '--'),
                 new Col("ちから", "power", (r, d) => CSV_COL.POWER,
-                    new ColPos(10, 10, 90, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 85, 80), null, (val) => `${val || '--/--'}`),
                 new Col("ギタン", "gitan", (r, d) => CSV_COL.GITAN,
-                    new ColPos(10, 10, 90, 90), new ColPos(15, 15, 0, 85)),
-            ], new RowOption(80, 80, 150, 150)),
+                    new ColPos(15, 10, 85, 90), null, (val) => `${val || '----'}G`),
+            ], new RowOption(80, 80, 170, 170)),
+
             // レイアウト：全記録用
-            ROW_DEF_ALL: new Row([
+            ROW_DEF_ALL:  new Row([
                 new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID,
-                    new ColPos(10, 10, 0, 0), new ColPos(15, 15, 0, 85)),
-                new Col("RTA", "time-rta", (r, d) => CSV_COL.TIME_RTA,
-                    new ColPos(20, 20, 0, 10), new ColPos(15, 15, 0, 10), (val) => val || "--:--:--"),
-                new Col("IGT", "time-igt", (r, d) => CSV_COL.TIME_IGT,
-                    new ColPos(20, 20, 0, 35), new ColPos(15, 15, 0, 35), (val) => val || "--:--:--"),
-                new Col("ターン数", "record", (r, d) => CSV_COL.TURN,
-                    new ColPos(20, 20, 0, 60), new ColPos(15, 15, 0, 60), (val) => val || "--"),
+                    new ColPos(10, 10, 0, 0)),
                 new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP,
-                    new ColPos(15, 30, 20, 0), new ColPos(20, 20, 80, 10), (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
-                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
-                    new ColPos(15, 50, 20, 30), new ColPos(20, 55, 80, 30), (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                    new ColPos(10, 10, 10, 0), null, (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
                 new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL,
-                    new ColPos(15, 15, 20, 80), new ColPos(20, 15, 80, 85), (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                    new ColPos(15, 10, 20, 0), null, (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("タイム(IGT)", "time-igt", (r, d) => CSV_COL.TIME_IGT,
+                    new ColPos(20, 20, 0, 15)),
+                new Col("タイム(RTA)", "time-rta", (r, d) => CSV_COL.TIME_RTA,
+                    new ColPos(20, 20, 0, 35)),
+                new Col("ターン数", "turn", (r, d) => CSV_COL.TURN,
+                    new ColPos(20, 20, 0, 55)),
                 new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL,
-                    new ColPos(10, 100, 35, 0), new ColPos(15, 70, 15, 10), (val) => val ? `<img src="${val}"></img>` : ''),
-                new Col("走者", "runner", (r, d) => CSV_COL.NAME,
-                    new ColPos(55, 30, 45, 10), new ColPos(50, 30, 30, 10)),
+                    new ColPos(15, 60, 20, 20), null, (val) => val ? `<img src="${val}"></img>` : ''),
+                new Col("お名前", "runner", (r, d) => CSV_COL.NAME,
+                    new ColPos(20, 70, 30, 10)),
                 new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT,
-                    new ColPos(55, 40, 45, 40), new ColPos(50, 45, 30, 30), (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                    new ColPos(35, 70, 50, 10), null, (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
+                new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
+                    new ColPos(15, 70, 85, 10), null, (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+
                 new Col("LV", "level", (r, d) => CSV_COL.LEVEL,
-                    new ColPos(10, 10, 45, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 35, 80), null, (val) => `Lv ${val || '--'}`),
                 new Col("HP", "hp", (r, d) => CSV_COL.HP,
-                    new ColPos(10, 10, 45, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 35, 90), null, (val) => `HP ${val || '--/--'}`),
                 new Col("倒した敵の数", "enemies", (r, d) => CSV_COL.ENEMIES,
-                    new ColPos(10, 10, 55, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(10, 10, 45, 80), null, (val) => `${val || '---'}体`),
                 new Col("武器", "weapon", (r, d) => CSV_COL.WEAPON_NAME,
-                    new ColPos(15, 10, 65, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 55, 80), null, (val, all) => `${val || '--'}${all[CSV_COL.WEAPON_PLUS]}`),
                 new Col("盾", "shield", (r, d) => CSV_COL.SHIELD_NAME,
-                    new ColPos(15, 10, 65, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 55, 90), null, (val, all) => `${val || '--'}${all[CSV_COL.SHIELD_PLUS]}`),
                 new Col("腕輪1", "bracelet1", (r, d) => CSV_COL.BRACELET1,
-                    new ColPos(15, 10, 80, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 70, 80), null, (val, all) => val || '--'),
                 new Col("腕輪2", "bracelet2", (r, d) => CSV_COL.BRACELET2,
-                    new ColPos(15, 10, 80, 90), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 70, 90), null, (val, all) => val || '--'),
                 new Col("ちから", "power", (r, d) => CSV_COL.POWER,
-                    new ColPos(10, 10, 90, 80), new ColPos(15, 15, 0, 85)),
+                    new ColPos(15, 10, 85, 80), null, (val) => `${val || '--/--'}`),
                 new Col("ギタン", "gitan", (r, d) => CSV_COL.GITAN,
-                    new ColPos(10, 10, 90, 90), new ColPos(15, 15, 0, 85)),
-            ], new RowOption(80, 100, 150, 150))
+                    new ColPos(15, 10, 85, 90), null, (val) => `${val || '----'}G`),
+            ], new RowOption(80, 80, 170, 170)),
         }
 
         /**
          * レギュ一覧
          */
         const REGURATIONS = [
-            new CategoryConfig("走者別：タイム(IGT)", LAYOUTS.ROW_DEF_TA, CSV_DATA_URL, 'とぐろ島の神髄',
+            new CategoryConfig("タイム（IGT）", LAYOUTS.ROW_DEF_TA, CSV_DATA_URL, 'とぐろ島の神髄',
                 ALL_DUNGEONS.filter(e => !['とぐろ島（初戦撃破）', 'とぐろ島（2戦目以降撃破）'].includes(e)), null, [CSV_COL.PLAYER_ID], [new SortType(CSV_COL.TIME_IGT)]),
-            new CategoryConfig("走者別：タイム(RTA)", LAYOUTS.ROW_DEF_RTA, CSV_DATA_URL, 'とぐろ島（初戦撃破）', ['とぐろ島（初戦撃破）', 'とぐろ島（2戦目以降撃破）'], null, [CSV_COL.PLAYER_ID], [new SortType(CSV_COL.TIME_IGT)]),
-            new CategoryConfig("走者別：ターン数", LAYOUTS.ROW_DEF_TURN, CSV_DATA_URL, 'とぐろ島（初戦撃破）', ALL_DUNGEONS, null, [CSV_COL.PLAYER_ID], [new SortType(CSV_COL.TURN, true, (e => parseInt(e)))]),
+            new CategoryConfig("タイム（RTA）", LAYOUTS.ROW_DEF_RTA, CSV_DATA_URL, 'とぐろ島（初戦撃破）', ['とぐろ島（初戦撃破）', 'とぐろ島（2戦目以降撃破）'], null, [CSV_COL.PLAYER_ID], [new SortType(CSV_COL.TIME_IGT)]),
+            new CategoryConfig("ターン数", LAYOUTS.ROW_DEF_TURN, CSV_DATA_URL, 'とぐろ島（初戦撃破）', ALL_DUNGEONS, null, [CSV_COL.PLAYER_ID], [new SortType(CSV_COL.TURN, true, (e => parseInt(e)))]),
             new CategoryConfig("全記録", LAYOUTS.ROW_DEF_ALL, CSV_DATA_URL, 'とぐろ島（初戦撃破）', ALL_DUNGEONS, null, [], [new SortType(CSV_COL.REC_ID)]),
         ];
 
@@ -704,9 +953,36 @@
             $termSelect: null,
             /** @type {Element} */
             $recordStyle: null,
+            /** @type {Element} */
+            $btnOpenGear: null,
+            /** @type {Element} */
+            $gearModal: null,
+            /** @type {Element[]} */
+            $allSelects: null,
+            /** @type {Element[]} */
+            $noSelects: null,
+            /** @type {Element} */
+            $wepons: null,
+            /** @type {Element} */
+            $shields: null,
+            /** @type {Element} */
+            $bracelets: null,
+            /** @type {Element} */
+            $btnDone: null,
+            /** @type {Element} */
+            $btnCancel: null,
+            /** @type {Element} */
+            $btnHasVideo: null,
+            gearCondition: {
+                weapons: [...WEAPON_NAMES],
+                shields: [...SHIELD_NAMES],
+                bracelets: [...BRACELET_NAMES],
+            },
             currentTerm: ALL_TERM,
+            hasVideoOnly: false,
             csvCache: {},
-            currentConfig: REGURATIONS[0]
+            currentConfig: REGURATIONS[0],
+            dungeonName: null
         };
 
         /**
@@ -788,14 +1064,25 @@
         /**
          * 記録取得処理
          */
-        function getRecords(targetConfig, dungeon, term = ALL_TERM) {
+        function getRecords(targetConfig, dungeon, gearCondition, term = ALL_TERM) {
 
-            const recordFilter = term == ALL_TERM
+            const dungeonTermFilter = term == ALL_TERM
                 ? (r) => r[CSV_COL.DUNGEON_NAME] == dungeon
                 : (r) => r[CSV_COL.DUNGEON_NAME] == dungeon && `${r[CSV_COL.TIMESTAMP]}`.startsWith(term);
 
+            const gearFilter = (r) => {
+                const weaponOk = gearCondition.weapons?.includes(r[CSV_COL.WEAPON_NAME] || UNKNOWN);
+                const shieldOk = gearCondition.shields?.includes(r[CSV_COL.SHIELD_NAME] || UNKNOWN);
+                const braceletOk = gearCondition.bracelets?.includes(r[CSV_COL.BRACELET1] || UNKNOWN) || gearCondition.bracelets?.includes(r[CSV_COL.BRACELET2] || UNKNOWN);
+                return weaponOk && shieldOk && braceletOk;
+            };
+
+            const videoFilter = (r) => r[CSV_COL.VIDEO_URL] || !state.hasVideoOnly;
+
             const baseRecords = targetConfig.records
-                .filter(recordFilter)
+                .filter(dungeonTermFilter)
+                .filter(gearFilter)
+                .filter(videoFilter)
                 .sort((r1, r2) => compare(r1, r2, targetConfig.sortCols));
 
             return targetConfig.groupCols?.length > 0
@@ -822,7 +1109,7 @@
                 }
                 state.$dungeonSelect.innerHTML = state.currentConfig.dungeons
                     .map(d => {
-                        const records = getRecords(state.currentConfig, d);
+                        const records = getRecords(state.currentConfig, d, state.gearCondition);
                         const count = `${records.length}`.padStart(3, "_");
                         const style = records.length <= 0 ? 'no-rec' : '';
                         return `<option value="${d}" class="${style}">${count}：${d}</option>`;
@@ -842,7 +1129,7 @@
             const terms = state.currentConfig.terms
                 .sort().reverse()
                 .map(e => {
-                    const records = getRecords(config, targetDungeonName, e);
+                    const records = getRecords(config, targetDungeonName, state.gearCondition, e);
                     const style = records.length <= 0 ? 'no-rec' : '';
                     const count = records.length.toString().padStart(3, "_");
                     const disp = `${count}：${e}`;
@@ -864,18 +1151,65 @@
         /**
         * @param {CategoryConfig} config
         */
-        async function loadRecords(config, targetDungeonName, targetTerm) {
+        async function loadRecords(config, targetDungeonName, targetTerm, gearCondition) {
+            
+            config = config || state.currentConfig;
+            targetDungeonName = targetDungeonName || state.dungeonName || config.defaultDungeon;
+            targetTerm = targetTerm || state.currentTerm;
+            gearCondition = gearCondition || state.gearCondition;
+
             const regulationName = config.name;
             const rowDef = config.rowDef;
-            const dungeonName = targetDungeonName || config.defaultDungeon;
-            const term = targetTerm || state.currentTerm;
-            const records = getRecords(state.currentConfig, dungeonName, term);
+            const records = getRecords(config, targetDungeonName, gearCondition, targetTerm);
             const recordsHtml = records
-                .map((r, i) => rowDef.outValue(regulationName, dungeonName, r, (i % 2 == 0 ? 'row-odd' : ''), i))
+                .map((r, i) => rowDef.outValue(regulationName, targetDungeonName, r, (i % 2 == 0 ? 'row-odd' : ''), i))
                 .join("");
-            const header = rowDef.outHeader(regulationName, dungeonName, config.header);
+            const header = rowDef.outHeader(regulationName, targetDungeonName, config.header);
             state.$recordsHeader.innerHTML = header;
             state.$main.innerHTML = recordsHtml;
+
+            state.currentConfig = config;
+            state.dungeonName = targetDungeonName;
+            state.term = targetTerm;
+            state.gearCondition = gearCondition;
+        }
+
+        /**
+         * 装備条件の選択
+         */
+        function openGearSelect() {
+            [
+                { elems: Array.from(state.$wepons.querySelectorAll('button')), cond: state.gearCondition.weapons },
+                { elems: Array.from(state.$shields.querySelectorAll('button')), cond: state.gearCondition.shields },
+                { elems: Array.from(state.$bracelets.querySelectorAll('button')), cond: state.gearCondition.bracelets }
+            ].forEach(target => {
+                // いったんクリア
+                target.elems.forEach(e => {
+                    e.classList.remove('active');
+                    e.classList.add('inactive');
+                });
+                // 現在の条件に合うものをアクティブ表示
+                target.elems
+                    .filter(e => target.cond.includes(e.textContent))
+                    .forEach(e => {
+                        e.classList.remove('inactive');
+                        e.classList.add('active');
+                    });
+            });
+            state.$gearModal.style.visibility = 'visible';
+        }
+
+        /**
+         * 装備条件の選択
+         */
+        function closeGear(isDone) {
+            if (isDone) {
+                state.gearCondition.weapons = Array.from(state.$wepons.querySelectorAll('button.active')).map(e => e.textContent);
+                state.gearCondition.shields = Array.from(state.$shields.querySelectorAll('button.active')).map(e => e.textContent);
+                state.gearCondition.bracelets = Array.from(state.$bracelets.querySelectorAll('button.active')).map(e => e.textContent);
+                loadRecords();
+            }
+            state.$gearModal.style.visibility = 'hidden';
         }
 
         /**
@@ -890,11 +1224,49 @@
                 state.$regulationsSelect = document.querySelector('#regulations');
                 state.$termSelect = document.querySelector('#term');
                 state.$recordStyle = document.querySelector('#recordStyle');
+                state.$gearModal = document.querySelector('#gearWall');
+                state.$wepons = document.querySelector('#gearWall .gear-main .weapons .conditions');
+                state.$shields = document.querySelector('#gearWall .gear-main .shields .conditions');
+                state.$bracelets = document.querySelector('#gearWall .gear-main .bracelets .conditions');
+                state.$allSelects = document.querySelectorAll('#gearWall .all-select');
+                state.$noSelects = document.querySelectorAll('#gearWall .no-select');
+                state.$btnOpenGear = document.querySelector('#openGear');
+                state.$btnDone = document.querySelector('#gearWall button.done');
+                state.$btnCancel = document.querySelector('#gearWall button.cancel');
+                state.$btnHasVideo = document.querySelector('#hasVideo');
+
+                // 装備条件
+                state.$wepons.innerHTML += WEAPON_NAMES.map(g => `<button class="item active">${g}</button>`).join("");
+                state.$shields.innerHTML += SHIELD_NAMES.map(g => `<button class="item active">${g}</button>`).join("");
+                state.$bracelets.innerHTML += BRACELET_NAMES.map(g => `<button class="item active">${g}</button>`).join("");
 
                 // イベント設定
                 state.$regulationsSelect.addEventListener('change', () => changeRegulation(state.$regulationsSelect.value));
                 state.$dungeonSelect.addEventListener('change', () => changeDungeon(state.currentConfig, state.$dungeonSelect.value));
                 state.$termSelect.addEventListener('change', () => loadRecords(state.currentConfig, state.$dungeonSelect.value, state.$termSelect.value));
+                state.$wepons.addEventListener('click', (e) => ['active', 'inactive'].forEach(c => e.target.classList.toggle(c)));
+                state.$shields.addEventListener('click', (e) => ['active', 'inactive'].forEach(c => e.target.classList.toggle(c)));
+                state.$bracelets.addEventListener('click', (e) => ['active', 'inactive'].forEach(c => e.target.classList.toggle(c)));
+                state.$allSelects.forEach(s => s.addEventListener('click', (e) => {
+                    e.target.closest('.items').querySelectorAll('.conditions button').forEach((b) => {
+                        b.classList.add('active');
+                        b.classList.remove('inactive');
+                    });
+                }));
+                state.$noSelects.forEach(s => s.addEventListener('click', (e) => {
+                    e.target.closest('.items').querySelectorAll('.conditions button').forEach((b) => {
+                        b.classList.add('inactive');
+                        b.classList.remove('active');
+                    });
+                }));
+                state.$btnOpenGear.addEventListener('click', () => openGearSelect());
+                state.$btnDone.addEventListener('click', () => closeGear(true));
+                state.$btnCancel.addEventListener('click', () => closeGear(false));
+                state.$btnHasVideo.addEventListener('click', (e) =>  {
+                    ['active', 'inactive'].forEach(c => e.target.classList.toggle(c));
+                    state.hasVideoOnly = e.target.classList.contains('active');
+                    loadRecords();
+                });
 
                 // レギュ一覧出力
                 state.$regulationsSelect.innerHTML = REGURATIONS.map(c => `<option>${c.name}</option>`).join("");
@@ -917,11 +1289,42 @@
             <select id='regulations' class="half"></select>
             <select id='dungeons' class="half"></select>
             <div class="header-panel">対象期間</div>
-            <select id='term' class="full"></select>
+            <div class="header-panel">絞り込む</div>
+            <select id='term' class="half"></select>
+            <button id='openGear' class="quater">装備条件</button>
+            <button id='hasVideo' class="quater inactive">「動画あり」のみ</button>
         </div>
         <div id='recordsHeader'></div>
     </header>
     <main>
+        <div id="gearWall">
+            <div class="gear-main">
+                <div class="gear-header">
+                    <button class="cancel">キャンセル</button>
+                    <button class="done">決定</button>
+                </div>
+                <div class="gear-select">
+                    <div class="items weapons">
+                        <div class="label">武器</div>
+                        <button class="all-select">全て選択</button>
+                        <button class="no-select">選択解除</button>
+                        <div class="conditions"></div>
+                    </div>
+                    <div class="items shields">
+                        <div class="label">盾</div>
+                        <button class="all-select">全て選択</button>
+                        <button class="no-select">選択解除</button>
+                        <div class="conditions"></div>
+                    </div>
+                    <div class="items bracelets">
+                        <div class="label">腕輪</div>
+                        <button class="all-select">全て選択</button>
+                        <button class="no-select">選択解除</button>
+                        <div class="conditions"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="records"></div>
     </main>
     <style id="recordStyle">
