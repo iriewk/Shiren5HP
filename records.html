@@ -21,25 +21,17 @@
             width: 100%;
         }
 
-        header button.one-eighth,
-        header select.one-eighth {
-            width: 12%;
+        header .quater {
+            grid-column: span 1;
         }
 
-        header button.quater,
-        header select.quater {
-            width: 24%;
-        }
-
-        header button.half,
-        header select.half {
-            width: 48%;
+        header .half {
+            grid-column: span 2;
         }
 
 
-        header button.full,
-        header select.full {
-            width: 96%;
+        header .full {
+            grid-column: span 4;
         }
 
         header button,
@@ -63,11 +55,16 @@
         }
 
         header .select-box {
-            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
         }
 
         header .regulations {
             width: 48%;
+        }
+
+        header #recordsHeader {
+            display: none;
         }
 
         main {
@@ -127,6 +124,8 @@
         }
 
         main #gearWall .gear-header {
+            position: sticky;
+            top: 0px;
             width: 100%;
             display: grid;
             direction: rtl;
@@ -181,7 +180,7 @@
             position: relative;
             background-color: rgb(50, 10, 0);
             color: rgba(255, 240, 200);
-            border-top: solid rgba(0, 0, 0, 0.5)
+            border-top: solid 4px rgba(0, 0, 0, 0.5)
         }
 
         .row-odd {
@@ -198,7 +197,7 @@
             height: 100%;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
+            justify-content: start;
             font-weight: bold;
         }
 
@@ -216,7 +215,6 @@
         }
 
         .d.rec-id,
-        .d.video,
         .d.date,
         .d.power,
         .d.gitan,
@@ -225,10 +223,65 @@
         .d.shield,
         .d.bracelet1,
         .d.bracelet2,
+        .d.dungeon,
         .d.hp,
         .d.enemies {
-            text-align: left;
-            font-size: 0.8em;
+            justify-content: start;
+            font-size: 1em;
+        }
+
+        .d.video {
+            justify-content: end;
+            font-size: 1em;
+        }
+
+        .d.power::before,
+        .d.gitan::before,
+        .d.level::before,
+        .d.weapon::before,
+        .d.shield::before,
+        .d.bracelet1::before,
+        .d.bracelet2::before,
+        .d.hp::before,
+        .d.enemies::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-size: contain;
+        }
+
+        .d.power::before {
+            background-image: url('https://nicoshirenrank.sakura.ne.jp/image/shiren6/power.png');
+        }
+
+        .d.gitan::before {
+            background-image: url('https://nicoshirenrank.sakura.ne.jp/image/shiren6/gitan.png');
+        }
+
+        .d.level::before {
+            background-image: url('https://nicoshirenrank.sakura.ne.jp/image/shiren6/lv.png');
+        }
+
+        .d.weapon::before {
+            background-image: url('https://nicoshirenrank.sakura.ne.jp/image/shiren6/weapon.png');
+        }
+
+        .d.shield::before {
+            background-image: url('https://nicoshirenrank.sakura.ne.jp/image/shiren6/shield.png');
+        }
+
+        .d.bracelet1::before,
+        .d.bracelet2::before {
+            background-image: url('https://nicoshirenrank.sakura.ne.jp/image/shiren6/bracelet.png');
+        }
+
+        .d.hp::before {
+            background-image: url('https://nicoshirenrank.sakura.ne.jp/image/shiren6/hp.png');
+        }
+
+        .d.enemies::before {
+            background-image: url('https://nicoshirenrank.sakura.ne.jp/image/shiren6/enemies.png');
         }
 
         .row.header .d.runner,
@@ -375,7 +428,9 @@
             // ちから
             POWER: 26,
             // ギタン
-            GITAN: 27
+            GITAN: 27,
+            // 画像
+            IMAGE_URL: 28
         }
         const UNKNOWN = '--(不明)';
         const WEAPON_NAMES = [
@@ -506,7 +561,9 @@
             "アスカ": "https://nicoshirenrank.sakura.ne.jp/image/shiren6/asuka.png"
         };
         const ALL_TERM = "全期間";
+        const DUNGEON_NO_SELECT = '--';
         const ALL_DUNGEONS = [
+            DUNGEON_NO_SELECT,
             'とぐろ島（初戦撃破）',
             'とぐろ島（2戦目以降撃破）',
             '魃の砂丘',
@@ -570,17 +627,17 @@
          * カテゴリ設定
          */
         class CategoryConfig {
-            constructor(name, rowDef, csvUrl, defaultDungeon, dungeons, extFilter, groupCols, sortCols) {
-                this.name = name;
+            constructor(options) {
+                this.name = options.name;
                 /** @type {Row}*/
-                this.rowDef = rowDef;
-                this.csvUrl = csvUrl;
-                this.defaultDungeon = defaultDungeon
-                this.dungeons = dungeons;
-                this.extFilter = extFilter;
-                this.groupCols = groupCols;
+                this.rowDef = options.rowDef;
+                this.csvUrl = options.csvUrl;
+                this.defaultDungeon = options.defaultDungeon
+                this.dungeons = options.dungeons;
+                this.extFilter = options.extFilter;
+                this.groupCols = options.groupCols;
                 /** @type {SortType[]} */
-                this.sortCols = sortCols;
+                this.sortCols = options.sortCols;
                 this.header = null;
                 this.records = null;
             }
@@ -766,11 +823,11 @@
                 new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID,
                     new ColPos(10, 10, 0, 0)),
                 new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP,
-                    new ColPos(10, 10, 10, 0), null, (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
+                    new ColPos(10, 10, 10, 0), null, (val, all) => val ? val.substring(2) : ''),
                 new Col("順位", "rank", (r, d) => null,
                     new ColPos(10, 90, 0, 10), null, (val, all, rowIdx) => rowIdx + 1),
-                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL,
-                    new ColPos(10, 10, 20, 0), null, (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                new Col("ダンジョン", "dungeon", (r, d) => CSV_COL.DUNGEON_NAME,
+                    new ColPos(70, 10, 20, 0)),
                 new Col("タイム", "record", (r, d) => CSV_COL.TIME_IGT,
                     new ColPos(10, 90, 10, 10)),
                 new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL,
@@ -781,25 +838,31 @@
                     new ColPos(35, 70, 50, 10), null, (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
                 new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
                     new ColPos(15, 70, 85, 10), null, (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                new Col("リンク", "video", (r, d) => null,
+                    new ColPos(15, 10, 85, 0), null, (val, all) => [
+                        (all[CSV_COL.IMAGE_URL] ? `<a href="${all[CSV_COL.IMAGE_URL]}" target="_blank">画像</a>` : ''),
+                        (all[CSV_COL.REC_URL] ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">ポスト</a>` : ''),
+                        (all[CSV_COL.VIDEO_URL] ? `<a href="${all[CSV_COL.VIDEO_URL]}" target="_blank">動画</a>` : ''),
+                    ].join("&nbsp")),
 
                 new Col("LV", "level", (r, d) => CSV_COL.LEVEL,
-                    new ColPos(10, 10, 35, 80), null, (val) => `Lv ${val || '--'}`),
+                    new ColPos(20, 10, 10, 80), null, (val) => `${val || '??'}`),
                 new Col("HP", "hp", (r, d) => CSV_COL.HP,
-                    new ColPos(10, 10, 35, 90), null, (val) => `HP ${val || '--/--'}`),
+                    new ColPos(20, 10, 10, 90), null, (val) => `${val || '???'}`),
                 new Col("倒した敵の数", "enemies", (r, d) => CSV_COL.ENEMIES,
-                    new ColPos(10, 10, 45, 80), null, (val) => `${val || '---'}体`),
+                    new ColPos(20, 10, 30, 80), null, (val) => `${val || '???'}体`),
                 new Col("武器", "weapon", (r, d) => CSV_COL.WEAPON_NAME,
-                    new ColPos(15, 10, 55, 80), null, (val, all) => `${val || '--'}${all[CSV_COL.WEAPON_PLUS]}`),
+                    new ColPos(20, 10, 50, 80), null, (val, all) => `${val || '??'}${((all[CSV_COL.WEAPON_PLUS] ?? 0) > 0 ? "+" : "") + all[CSV_COL.WEAPON_PLUS]}`),
                 new Col("盾", "shield", (r, d) => CSV_COL.SHIELD_NAME,
-                    new ColPos(15, 10, 55, 90), null, (val, all) => `${val || '--'}${all[CSV_COL.SHIELD_PLUS]}`),
+                    new ColPos(20, 10, 50, 90), null, (val, all) => `${val || '??'}${((all[CSV_COL.SHIELD_PLUS] ?? 0) > 0 ? "+" : "") + all[CSV_COL.SHIELD_PLUS]}`),
                 new Col("腕輪1", "bracelet1", (r, d) => CSV_COL.BRACELET1,
-                    new ColPos(15, 10, 70, 80), null, (val, all) => val || '--'),
+                    new ColPos(20, 10, 70, 80), null, (val, all) => val || '??'),
                 new Col("腕輪2", "bracelet2", (r, d) => CSV_COL.BRACELET2,
-                    new ColPos(15, 10, 70, 90), null, (val, all) => val || '--'),
+                    new ColPos(20, 10, 70, 90), null, (val, all) => val || '??'),
                 new Col("ちから", "power", (r, d) => CSV_COL.POWER,
-                    new ColPos(15, 10, 85, 80), null, (val) => `${val || '--/--'}`),
+                    new ColPos(10, 10, 90, 80), null, (val) => `${val || '??'}`),
                 new Col("ギタン", "gitan", (r, d) => CSV_COL.GITAN,
-                    new ColPos(15, 10, 85, 90), null, (val) => `${val || '----'}G`),
+                    new ColPos(10, 10, 90, 90), null, (val) => `${val || '????'}`),
             ], new RowOption(80, 80, 170, 170)),
 
             // レイアウト：RTA用
@@ -811,7 +874,7 @@
                 new Col("順位", "rank", (r, d) => null,
                     new ColPos(10, 90, 0, 10), null, (val, all, rowIdx) => rowIdx + 1),
                 new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL,
-                    new ColPos(10, 10, 20, 0), null, (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                    new ColPos(15, 10, 85, 0), null, (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
                 new Col("タイム", "record", (r, d) => CSV_COL.TIME_RTA,
                     new ColPos(10, 90, 10, 10)),
                 new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL,
@@ -824,23 +887,23 @@
                     new ColPos(15, 70, 85, 10), null, (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
 
                 new Col("LV", "level", (r, d) => CSV_COL.LEVEL,
-                    new ColPos(10, 10, 35, 80), null, (val) => `Lv ${val || '--'}`),
+                    new ColPos(20, 10, 10, 80), null, (val) => `${val || '??'}`),
                 new Col("HP", "hp", (r, d) => CSV_COL.HP,
-                    new ColPos(10, 10, 35, 90), null, (val) => `HP ${val || '--/--'}`),
+                    new ColPos(20, 10, 10, 90), null, (val) => `${val || '???'}`),
                 new Col("倒した敵の数", "enemies", (r, d) => CSV_COL.ENEMIES,
-                    new ColPos(10, 10, 45, 80), null, (val) => `${val || '---'}体`),
+                    new ColPos(20, 10, 30, 80), null, (val) => `${val || '???'}体`),
                 new Col("武器", "weapon", (r, d) => CSV_COL.WEAPON_NAME,
-                    new ColPos(15, 10, 55, 80), null, (val, all) => `${val || '--'}${all[CSV_COL.WEAPON_PLUS]}`),
+                    new ColPos(20, 10, 50, 80), null, (val, all) => `${val || '??'}${((all[CSV_COL.WEAPON_PLUS] ?? 0) > 0 ? "+" : "") + all[CSV_COL.WEAPON_PLUS]}`),
                 new Col("盾", "shield", (r, d) => CSV_COL.SHIELD_NAME,
-                    new ColPos(15, 10, 55, 90), null, (val, all) => `${val || '--'}${all[CSV_COL.SHIELD_PLUS]}`),
+                    new ColPos(20, 10, 50, 90), null, (val, all) => `${val || '??'}${((all[CSV_COL.SHIELD_PLUS] ?? 0) > 0 ? "+" : "") + all[CSV_COL.SHIELD_PLUS]}`),
                 new Col("腕輪1", "bracelet1", (r, d) => CSV_COL.BRACELET1,
-                    new ColPos(15, 10, 70, 80), null, (val, all) => val || '--'),
+                    new ColPos(20, 10, 70, 80), null, (val, all) => val || '??'),
                 new Col("腕輪2", "bracelet2", (r, d) => CSV_COL.BRACELET2,
-                    new ColPos(15, 10, 70, 90), null, (val, all) => val || '--'),
+                    new ColPos(20, 10, 70, 90), null, (val, all) => val || '??'),
                 new Col("ちから", "power", (r, d) => CSV_COL.POWER,
-                    new ColPos(15, 10, 85, 80), null, (val) => `${val || '--/--'}`),
+                    new ColPos(10, 10, 90, 80), null, (val) => `${val || '??'}`),
                 new Col("ギタン", "gitan", (r, d) => CSV_COL.GITAN,
-                    new ColPos(15, 10, 85, 90), null, (val) => `${val || '----'}G`),
+                    new ColPos(10, 10, 90, 90), null, (val) => `${val || '????'}`),
             ], new RowOption(80, 80, 170, 170)),
 
             // レイアウト：歩数用
@@ -865,66 +928,72 @@
                     new ColPos(15, 70, 85, 10), null, (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
 
                 new Col("LV", "level", (r, d) => CSV_COL.LEVEL,
-                    new ColPos(10, 10, 35, 80), null, (val) => `Lv ${val || '--'}`),
+                    new ColPos(20, 10, 10, 80), null, (val) => `${val || '??'}`),
                 new Col("HP", "hp", (r, d) => CSV_COL.HP,
-                    new ColPos(10, 10, 35, 90), null, (val) => `HP ${val || '--/--'}`),
+                    new ColPos(20, 10, 10, 90), null, (val) => `${val || '???'}`),
                 new Col("倒した敵の数", "enemies", (r, d) => CSV_COL.ENEMIES,
-                    new ColPos(10, 10, 45, 80), null, (val) => `${val || '---'}体`),
+                    new ColPos(20, 10, 30, 80), null, (val) => `${val || '???'}体`),
                 new Col("武器", "weapon", (r, d) => CSV_COL.WEAPON_NAME,
-                    new ColPos(15, 10, 55, 80), null, (val, all) => `${val || '--'}${all[CSV_COL.WEAPON_PLUS]}`),
+                    new ColPos(20, 10, 50, 80), null, (val, all) => `${val || '??'}${((all[CSV_COL.WEAPON_PLUS] ?? 0) > 0 ? "+" : "") + all[CSV_COL.WEAPON_PLUS]}`),
                 new Col("盾", "shield", (r, d) => CSV_COL.SHIELD_NAME,
-                    new ColPos(15, 10, 55, 90), null, (val, all) => `${val || '--'}${all[CSV_COL.SHIELD_PLUS]}`),
+                    new ColPos(20, 10, 50, 90), null, (val, all) => `${val || '??'}${((all[CSV_COL.SHIELD_PLUS] ?? 0) > 0 ? "+" : "") + all[CSV_COL.SHIELD_PLUS]}`),
                 new Col("腕輪1", "bracelet1", (r, d) => CSV_COL.BRACELET1,
-                    new ColPos(15, 10, 70, 80), null, (val, all) => val || '--'),
+                    new ColPos(20, 10, 70, 80), null, (val, all) => val || '??'),
                 new Col("腕輪2", "bracelet2", (r, d) => CSV_COL.BRACELET2,
-                    new ColPos(15, 10, 70, 90), null, (val, all) => val || '--'),
+                    new ColPos(20, 10, 70, 90), null, (val, all) => val || '??'),
                 new Col("ちから", "power", (r, d) => CSV_COL.POWER,
-                    new ColPos(15, 10, 85, 80), null, (val) => `${val || '--/--'}`),
+                    new ColPos(10, 10, 90, 80), null, (val) => `${val || '??'}`),
                 new Col("ギタン", "gitan", (r, d) => CSV_COL.GITAN,
-                    new ColPos(15, 10, 85, 90), null, (val) => `${val || '----'}G`),
+                    new ColPos(10, 10, 90, 90), null, (val) => `${val || '????'}`),
             ], new RowOption(80, 80, 170, 170)),
 
             // レイアウト：全記録用
-            ROW_DEF_ALL:  new Row([
+            ROW_DEF_ALL: new Row([
                 new Col("記録ID", "rec-id", (r, d) => CSV_COL.REC_ID,
                     new ColPos(10, 10, 0, 0)),
                 new Col("日付", "date", (r, d) => CSV_COL.TIMESTAMP,
-                    new ColPos(10, 10, 10, 0), null, (val, all) => val ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">${val.substring(2)}</a>` : ''),
-                new Col("動画", "video", (r, d) => CSV_COL.VIDEO_URL,
-                    new ColPos(15, 10, 20, 0), null, (val, all) => val ? `<a href="${val}" target="_blank">動画</a>` : ''),
+                    new ColPos(10, 10, 10, 0), null, (val, all) => val ? val.substring(2) : ''),
+                new Col("ダンジョン", "dungeon", (r, d) => CSV_COL.DUNGEON_NAME,
+                    new ColPos(70, 10, 20, 0)),
                 new Col("タイム(IGT)", "time-igt", (r, d) => CSV_COL.TIME_IGT,
-                    new ColPos(20, 20, 0, 15)),
+                    new ColPos(20, 20, 0, 15), null, (val) => val ? `IGT：${val}` : ''),
                 new Col("タイム(RTA)", "time-rta", (r, d) => CSV_COL.TIME_RTA,
-                    new ColPos(20, 20, 0, 35)),
+                    new ColPos(20, 20, 0, 35), null, (val) => val ? `RTA：${val}` : ''),
                 new Col("ターン数", "turn", (r, d) => CSV_COL.TURN,
-                    new ColPos(20, 20, 0, 55)),
+                    new ColPos(20, 20, 0, 55), null, (val) => val ? `TURN：${val}` : ''),
                 new Col("アイコン", "icon", (r, d) => CSV_COL.IMG_URL,
-                    new ColPos(15, 60, 20, 20), null, (val) => val ? `<img src="${val}"></img>` : ''),
+                    new ColPos(10, 60, 20, 20), null, (val) => val ? `<img src="${val}"></img>` : ''),
                 new Col("お名前", "runner", (r, d) => CSV_COL.NAME,
                     new ColPos(20, 70, 30, 10)),
                 new Col("コメント", "comment", (r, d) => CSV_COL.COMMENT,
                     new ColPos(35, 70, 50, 10), null, (val) => val ? `${(escapeHtml(val.replace(/^"|"$/g, '')))}` : ''),
                 new Col("使用キャラ", "shiren", (r, d) => CSV_COL.SHIREN,
                     new ColPos(15, 70, 85, 10), null, (val) => val ? `<img src="${SHIREN_MAP[val]}"></img>` : ''),
+                new Col("リンク", "video", (r, d) => null,
+                    new ColPos(15, 10, 85, 0), null, (val, all) => [
+                        (all[CSV_COL.IMAGE_URL] ? `<a href="${all[CSV_COL.IMAGE_URL]}" target="_blank">画像</a>` : ''),
+                        (all[CSV_COL.REC_URL] ? `<a href="${all[CSV_COL.REC_URL]}" target="_blank">ポスト</a>` : ''),
+                        (all[CSV_COL.VIDEO_URL] ? `<a href="${all[CSV_COL.VIDEO_URL]}" target="_blank">動画</a>` : ''),
+                    ].join("&nbsp")),
 
                 new Col("LV", "level", (r, d) => CSV_COL.LEVEL,
-                    new ColPos(10, 10, 35, 80), null, (val) => `Lv ${val || '--'}`),
+                    new ColPos(20, 10, 10, 80), null, (val) => `${val || '??'}`),
                 new Col("HP", "hp", (r, d) => CSV_COL.HP,
-                    new ColPos(10, 10, 35, 90), null, (val) => `HP ${val || '--/--'}`),
+                    new ColPos(20, 10, 10, 90), null, (val) => `${val || '???'}`),
                 new Col("倒した敵の数", "enemies", (r, d) => CSV_COL.ENEMIES,
-                    new ColPos(10, 10, 45, 80), null, (val) => `${val || '---'}体`),
+                    new ColPos(20, 10, 30, 80), null, (val) => `${val || '???'}体`),
                 new Col("武器", "weapon", (r, d) => CSV_COL.WEAPON_NAME,
-                    new ColPos(15, 10, 55, 80), null, (val, all) => `${val || '--'}${all[CSV_COL.WEAPON_PLUS]}`),
+                    new ColPos(20, 10, 50, 80), null, (val, all) => `${val || '??'}${((all[CSV_COL.WEAPON_PLUS] ?? 0) > 0 ? "+" : "") + all[CSV_COL.WEAPON_PLUS]}`),
                 new Col("盾", "shield", (r, d) => CSV_COL.SHIELD_NAME,
-                    new ColPos(15, 10, 55, 90), null, (val, all) => `${val || '--'}${all[CSV_COL.SHIELD_PLUS]}`),
+                    new ColPos(20, 10, 50, 90), null, (val, all) => `${val || '??'}${((all[CSV_COL.SHIELD_PLUS] ?? 0) > 0 ? "+" : "") + all[CSV_COL.SHIELD_PLUS]}`),
                 new Col("腕輪1", "bracelet1", (r, d) => CSV_COL.BRACELET1,
-                    new ColPos(15, 10, 70, 80), null, (val, all) => val || '--'),
+                    new ColPos(20, 10, 70, 80), null, (val, all) => val || '??'),
                 new Col("腕輪2", "bracelet2", (r, d) => CSV_COL.BRACELET2,
-                    new ColPos(15, 10, 70, 90), null, (val, all) => val || '--'),
+                    new ColPos(20, 10, 70, 90), null, (val, all) => val || '??'),
                 new Col("ちから", "power", (r, d) => CSV_COL.POWER,
-                    new ColPos(15, 10, 85, 80), null, (val) => `${val || '--/--'}`),
+                    new ColPos(10, 10, 90, 80), null, (val) => `${val || '??'}`),
                 new Col("ギタン", "gitan", (r, d) => CSV_COL.GITAN,
-                    new ColPos(15, 10, 85, 90), null, (val) => `${val || '----'}G`),
+                    new ColPos(10, 10, 90, 90), null, (val) => `${val || '????'}`),
             ], new RowOption(80, 80, 170, 170)),
         }
 
@@ -932,11 +1001,49 @@
          * レギュ一覧
          */
         const REGURATIONS = [
-            new CategoryConfig("タイム（IGT）", LAYOUTS.ROW_DEF_TA, CSV_DATA_URL, 'とぐろ島の神髄',
-                ALL_DUNGEONS.filter(e => !['とぐろ島（初戦撃破）', 'とぐろ島（2戦目以降撃破）'].includes(e)), null, [CSV_COL.PLAYER_ID], [new SortType(CSV_COL.TIME_IGT)]),
-            new CategoryConfig("タイム（RTA）", LAYOUTS.ROW_DEF_RTA, CSV_DATA_URL, 'とぐろ島（初戦撃破）', ['とぐろ島（初戦撃破）', 'とぐろ島（2戦目以降撃破）'], null, [CSV_COL.PLAYER_ID], [new SortType(CSV_COL.TIME_IGT)]),
-            new CategoryConfig("ターン数", LAYOUTS.ROW_DEF_TURN, CSV_DATA_URL, 'とぐろ島（初戦撃破）', ALL_DUNGEONS, null, [CSV_COL.PLAYER_ID], [new SortType(CSV_COL.TURN, true, (e => parseInt(e)))]),
-            new CategoryConfig("全記録", LAYOUTS.ROW_DEF_ALL, CSV_DATA_URL, 'とぐろ島（初戦撃破）', ALL_DUNGEONS, null, [], [new SortType(CSV_COL.REC_ID)]),
+            new CategoryConfig({
+                name: "タイム（IGT）",
+                rowDef: LAYOUTS.ROW_DEF_TA,
+                csvUrl: CSV_DATA_URL,
+                defaultDungeon: 'とぐろ島の神髄',
+                dungeons: ALL_DUNGEONS.filter(e => !['とぐろ島（初戦撃破）', 'とぐろ島（2戦目以降撃破）'].includes(e)),
+                extFilter: null,
+                groupCols: [CSV_COL.PLAYER_ID],
+                sortCols: [new SortType(CSV_COL.TIME_IGT)]
+            }),
+
+            new CategoryConfig({
+                name: "タイム（RTA）",
+                rowDef: LAYOUTS.ROW_DEF_RTA,
+                csvUrl: CSV_DATA_URL,
+                defaultDungeon: 'とぐろ島（初戦撃破）',
+                dungeons: ['とぐろ島（初戦撃破）', 'とぐろ島（2戦目以降撃破）'],
+                extFilter: null,
+                groupCols: [CSV_COL.PLAYER_ID],
+                sortCols: [new SortType(CSV_COL.TIME_IGT)]
+            }),
+
+            new CategoryConfig({
+                name: "ターン数",
+                rowDef: LAYOUTS.ROW_DEF_TURN,
+                csvUrl: CSV_DATA_URL,
+                defaultDungeon: 'とぐろ島（初戦撃破）',
+                dungeons: ALL_DUNGEONS,
+                extFilter: null,
+                groupCols: [CSV_COL.PLAYER_ID],
+                sortCols: [new SortType(CSV_COL.TURN, true, (e => parseInt(e)))]
+            }),
+
+            new CategoryConfig({
+                name: "全記録",
+                rowDef: LAYOUTS.ROW_DEF_ALL,
+                csvUrl: CSV_DATA_URL,
+                defaultDungeon: DUNGEON_NO_SELECT,
+                dungeons: ALL_DUNGEONS,
+                extFilter: null,
+                groupCols: [],
+                sortCols: [new SortType(CSV_COL.REC_ID)]
+            }),
         ];
 
         // 状態値
@@ -1066,10 +1173,8 @@
          */
         function getRecords(targetConfig, dungeon, gearCondition, term = ALL_TERM) {
 
-            const dungeonTermFilter = term == ALL_TERM
-                ? (r) => r[CSV_COL.DUNGEON_NAME] == dungeon
-                : (r) => r[CSV_COL.DUNGEON_NAME] == dungeon && `${r[CSV_COL.TIMESTAMP]}`.startsWith(term);
-
+            const dungeonFilter = (r) => dungeon == DUNGEON_NO_SELECT || r[CSV_COL.DUNGEON_NAME] == dungeon;
+            const termFilter = (r) => term == ALL_TERM || `${r[CSV_COL.TIMESTAMP]}`.startsWith(term);
             const gearFilter = (r) => {
                 const weaponOk = gearCondition.weapons?.includes(r[CSV_COL.WEAPON_NAME] || UNKNOWN);
                 const shieldOk = gearCondition.shields?.includes(r[CSV_COL.SHIELD_NAME] || UNKNOWN);
@@ -1080,7 +1185,8 @@
             const videoFilter = (r) => r[CSV_COL.VIDEO_URL] || !state.hasVideoOnly;
 
             const baseRecords = targetConfig.records
-                .filter(dungeonTermFilter)
+                .filter(dungeonFilter)
+                .filter(termFilter)
                 .filter(gearFilter)
                 .filter(videoFilter)
                 .sort((r1, r2) => compare(r1, r2, targetConfig.sortCols));
@@ -1152,7 +1258,7 @@
         * @param {CategoryConfig} config
         */
         async function loadRecords(config, targetDungeonName, targetTerm, gearCondition) {
-            
+
             config = config || state.currentConfig;
             targetDungeonName = targetDungeonName || state.dungeonName || config.defaultDungeon;
             targetTerm = targetTerm || state.currentTerm;
@@ -1262,7 +1368,7 @@
                 state.$btnOpenGear.addEventListener('click', () => openGearSelect());
                 state.$btnDone.addEventListener('click', () => closeGear(true));
                 state.$btnCancel.addEventListener('click', () => closeGear(false));
-                state.$btnHasVideo.addEventListener('click', (e) =>  {
+                state.$btnHasVideo.addEventListener('click', (e) => {
                     ['active', 'inactive'].forEach(c => e.target.classList.toggle(c));
                     state.hasVideoOnly = e.target.classList.contains('active');
                     loadRecords();
@@ -1284,15 +1390,12 @@
 <body>
     <header>
         <div class="select-box">
-            <div class="header-panel">カテゴリ選択</div>
-            <div class="header-panel">ダンジョン選択</div>
             <select id='regulations' class="half"></select>
             <select id='dungeons' class="half"></select>
-            <div class="header-panel">対象期間</div>
-            <div class="header-panel">絞り込む</div>
-            <select id='term' class="half"></select>
+            <select id='term' class="quater"></select>
             <button id='openGear' class="quater">装備条件</button>
-            <button id='hasVideo' class="quater inactive">「動画あり」のみ</button>
+            <button id='openStatus' class="quater">ステータス条件</button>
+            <button id='hasVideo' class="quater inactive">動画あり</button>
         </div>
         <div id='recordsHeader'></div>
     </header>
