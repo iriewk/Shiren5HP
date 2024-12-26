@@ -1213,9 +1213,17 @@
 
                 this.$btnOpenStatus = document.querySelector('#openStatus');
                 this.$statusModal = document.querySelector('#statusWall');
+                this.inputTime = new InputRange('#statusWall .time', true);
+                this.inputTurn = new InputRange('#statusWall .turn');
+                this.inputLv = new InputRange('#statusWall .level');
+                this.inputHp = new InputRange('#statusWall .hp');
+                this.inputEnemies = new InputRange('#statusWall .enemies');
+                this.inputPower = new InputRange('#statusWall .power');
+                this.inputGitan = new InputRange('#statusWall .gitan');
+                this.$btnsCharacters = document.querySelectorAll('#statusWall .characters button');
+                this.$btnHasOnlyVideo = document.querySelector('#statusWall .status-select-optional .video button');
                 this.$btnStatusDone = document.querySelector('#statusWall button.done');
                 this.$btnStatusCancel = document.querySelector('#statusWall button.cancel');
-                this.$btnHasOnlyVideo = document.querySelector('#statusWall .status-select-optional .video button');
 
                 this.$imageModal = document.querySelector('#imageWall');
                 this.$btnImageCancel = document.querySelector('#imageWall button.cancel');
@@ -1229,13 +1237,6 @@
                 this.$btnUserDone = document.querySelector('#userWall button.done');
                 this.$btnUserCancel = document.querySelector('#userWall button.cancel');
 
-                this.inputTime = new InputRange('#statusWall .time', true);
-                this.inputTurn = new InputRange('#statusWall .turn');
-                this.inputLv = new InputRange('#statusWall .level');
-                this.inputHp = new InputRange('#statusWall .hp');
-                this.inputEnemies = new InputRange('#statusWall .enemies');
-                this.inputPower = new InputRange('#statusWall .power');
-                this.inputGitan = new InputRange('#statusWall .gitan');
 
                 this.gearCondition = {
                     weapons: [...WEAPON_NAMES],
@@ -1265,7 +1266,7 @@
             /**
              * 初期化
              */
-            init = async () => {
+            init = () => {
                 // 表示
                 this.$wepons.innerHTML += WEAPON_NAMES.map(g => `<button class="toggle item active">${g}</button>`).join("");
                 this.$shields.innerHTML += SHIELD_NAMES.map(g => `<button class="toggle item active">${g}</button>`).join("");
@@ -1303,7 +1304,6 @@
                 this.$btnImageCancel.addEventListener('click', () => this.closeImage());
 
                 this.$regulationsSelect.value = this.currentConfig.name;
-                await this.changeRegulation(this.currentConfig.name);
             };
 
             /**
@@ -1342,6 +1342,7 @@
                 this.inputEnemies.setCondition(this.statusCondition.enemies);
                 this.inputPower.setCondition(this.statusCondition.power);
                 this.inputGitan.setCondition(this.statusCondition.gitan);
+                Array.from(this.$btnsCharacters).forEach(b => utils.toggleBtn(b, this.statusCondition.characters.length == 0 || this.statusCondition.characters.includes(b.textContent)));
                 utils.toggleBtn(this.$btnHasOnlyVideo, this.statusCondition.hasVideoOnly);
                 this.$statusModal.style.visibility = 'visible';
             }
@@ -1358,6 +1359,14 @@
              * ユーザー条件の表示
              */
             openUserCondition = () => {
+                if (this.userCondition.length == 0) {
+                    this.$userList.querySelectorAll(`button`).forEach(b => utils.toggleBtn(b, true));
+                } else {
+                    this.$userList.querySelectorAll(`button`).forEach(b => utils.toggleBtn(b, false));
+                    this.userCondition.forEach(u => {
+                        utils.toggleBtn(this.$userList.querySelector(`button[data-id="${u}"]`), true);
+                    })
+                }
                 this.$userModal.style.visibility = 'visible';
             }
 
@@ -1385,6 +1394,7 @@
                     this.statusCondition.enemies = this.inputEnemies.getCondition();
                     this.statusCondition.power = this.inputPower.getCondition();
                     this.statusCondition.gitan = this.inputGitan.getCondition();
+                    this.statusCondition.characters = Array.from(this.$btnsCharacters).filter(utils.isActiveBtn).map(b => b.textContent);
                     this.statusCondition.hasVideoOnly = utils.isActiveBtn(this.$btnHasOnlyVideo);
                     this.changeRegulation(this.currentConfig.name, this.dungeonName);
                 }
@@ -1449,6 +1459,7 @@
                 const timeFilter = (r) => rangeCheck(statusCondition.time, r[CSV_COL.TIME]);
                 const turnFilter = (r) => rangeCheck(statusCondition.turn, r[CSV_COL.TURN]);
                 const userFilter = (r) => userCondition.length == 0 || userCondition.includes(r[CSV_COL.PLAYER_ID]);
+                const characterFilter = (r) => statusCondition.characters.length == 0 || statusCondition.characters.includes(r[CSV_COL.SHIREN]);
 
                 const baseRecords = targetConfig.records
                     .filter(dungeonFilter)
@@ -1463,6 +1474,7 @@
                     .filter(timeFilter)
                     .filter(turnFilter)
                     .filter(userFilter)
+                    .filter(characterFilter)
                     .sort((r1, r2) => utils.compare(r1, r2, targetConfig.sortCols));
 
                 return targetConfig.groupCols?.length > 0
@@ -1665,6 +1677,15 @@
             try {
                 pageState = new PageState();
                 pageState.init();
+
+                // クエリパラメータより条件して設定取得
+                const urlParams = new URLSearchParams(window.location.search);
+                const params = Object.fromEntries(urlParams.entries());
+                
+                pageState.userCondition = params.users?.split(',') || [];
+
+                // 初期ロード
+                await pageState.changeRegulation(pageState.currentConfig.name);
             } catch (e) {
                 console.error(e);
             }
@@ -1785,7 +1806,7 @@
                     </div>
                 </div>
                 <div class="status-select-optional">
-                    <div class="character">
+                    <div class="characters">
                         <div class="label">使用キャラ</div>
                         <button class="toggle active">シレン</button>
                         <button class="toggle active">狐渇シレン</button>
