@@ -436,69 +436,40 @@
         }
     </style>
     <script>
+        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScpQz9Q051_rAAwe_w98FSRgldtOy5-wIGxg5F6R_eIMYV5Vg/viewform";
         // const CSV_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQjDyl_00bayhBahhb1L0mPHUpYm_1tP9E3l5psQjvhHYbfx8c5uHydi4HPkh_iy-s58XcCMKazXLJt/pub?gid=795675206&single=true&output=csv';
         const CSV_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQjDyl_00bayhBahhb1L0mPHUpYm_1tP9E3l5psQjvhHYbfx8c5uHydi4HPkh_iy-s58XcCMKazXLJt/pub?gid=258625725&single=true&output=csv';
         const CSV_COL = {
-            // アイコン
-            USER_IMAGE_URL: 0,
-            // タイムスタンプ
-            TIMESTAMP: 1,
-            // 走者ID
-            PLAYER_ID: 2,
-            // 名前（投稿時）
-            NAME: 3,
-            // 記録ID
-            REC_ID: 4,
-            // ダンジョン
-            DUNGEON_NAME: 5,
-            // URL
-            REC_URL: 6,
-            // URL
-            VIDEO_URL: 7,
-            // クリアタイム（IGT）
-            TIME_IGT: 8,
-            // クリアタイム（RTA）
-            TIME_RTA: 9,
-            // ターン数
-            TURN: 10,
-            // 到達階層 
-            FLOOR: 11,
-            // 特記事項
-            NOTE: 12,
-            // 感想
-            COMMENT: 13,
-            // 使用キャラ
-            SHIREN: 14,
-            // 倒した数
-            ENEMIES: 15,
-            // レベル
-            LEVEL: 16,
-            // HP
-            HP: 17,
-            // 武器
-            WEAPON_NAME: 18,
-            // 武器補正
-            WEAPON_PLUS: 19,
-            // 盾
-            SHIELD_NAME: 20,
-            // 盾補正
-            SHIELD_PLUS: 21,
-            // 腕輪1
-            BRACELET1: 22,
-            // 腕輪2
-            BRACELET2: 23,
-            // 武器のつよさ
-            WEAPON_TOTAL: 24,
-            // 武器のつよさ
-            SHIELD_TOTAL: 25,
-            // ちから
-            POWER: 26,
-            // ギタン
-            GITAN: 27,
-            // 画像
-            IMAGE_URL: 28,
-            // クリアタイム（IGT or RTA）
-            TIME: 29,
+            USER_IMAGE_URL: 0,  // アイコン
+            TIMESTAMP: 1,       // タイムスタンプ
+            PLAYER_ID: 2,       // 走者ID
+            NAME: 3,            // 名前（投稿時）
+            REC_ID: 4,          // 記録ID
+            DUNGEON_NAME: 5,    // ダンジョン
+            REC_URL: 6,         // URL
+            VIDEO_URL: 7,       // URL
+            TIME_IGT: 8,        // クリアタイム（IGT）
+            TIME_RTA: 9,        // クリアタイム（RTA）
+            TURN: 10,           // ターン数
+            FLOOR: 11,          // 到達階層 
+            NOTE: 12,           // 特記事項
+            COMMENT: 13,        // 感想
+            SHIREN: 14,         // 使用キャラ
+            ENEMIES: 15,        // 倒した数
+            LEVEL: 16,          // レベル
+            HP: 17,             // HP
+            WEAPON_NAME: 18,    // 武器
+            WEAPON_PLUS: 19,    // 武器補正
+            SHIELD_NAME: 20,    // 盾
+            SHIELD_PLUS: 21,    // 盾補正
+            BRACELET1: 22,      // 腕輪1
+            BRACELET2: 23,      // 腕輪2
+            WEAPON_TOTAL: 24,   // 武器のつよさ
+            SHIELD_TOTAL: 25,   // 武器のつよさ
+            POWER: 26,          // ちから
+            GITAN: 27,          // ギタン
+            IMAGE_URL: 28,      // 画像
+            TIME: 29,           // クリアタイム（IGT or RTA）
         }
         const UNKNOWN = '--(不明)';
         const WEAPON_NAMES = [
@@ -1665,8 +1636,99 @@
                 } else {
                     ['active', 'inactive'].forEach(c => $button.classList.toggle(c));
                 }
-            }
+            },
 
+            auth: () => {
+
+            },
+
+            createFormUrl: (record, key, secret, password) => {
+
+                if (key && secret) {
+                    password = "dummy";
+                }
+                /*
+                    518284051:利用者名の選択
+                    746708502:パスワード入力
+                    1917820748:申請内容
+                    1637933050:記録の新規登録
+                    481267920:ダンジョン
+                    722436890:使用キャラ
+                    902924129:報告URL
+                    248634484:動画URL
+                    78125071:クリアタイム（IGT）
+                    20578852:クリアタイム（RTA）
+                    1575949274:ターン数
+                    620041023:到達階層 ※未クリアの場合
+                    192980587:特記事項
+                    1097803289:感想
+                    1633300224:記録の更新
+                    873007936:記録ID
+                    1826451656:ダンジョン
+                    1154233211:使用キャラ
+                    299883775:報告URL
+                    115118531:動画URL
+                    1379425732:クリアタイム（IGT）
+                    635501802:クリアタイム（RTA）
+                    1734240727:ターン数
+                    632693240:到達階層 ※未クリアの場合
+                    37729906:特記事項
+                    1788933574:感想
+                    494493769:記録の削除
+                    1501117452:記録ID
+                    542164458:クリップの新規登録
+                    962593230:クリップURL
+                    78632433:作品名
+                    1243219564:概要
+                    146868479:クリップの更新
+                    178195065:クリップID
+                    746700147:クリップURL
+                    1955040699:作品名
+                    656405895:概要
+                    1484513549:クリップの削除
+                    1086862389:クリップID
+                    499468567:その他
+                    1643652887:フリー入力欄
+                    1864340978:最終確認
+                    836036869:コミュニティDiscordへの通知
+                */
+                const items = {
+                    "entry.": CSV_COL.REC_ID,          // 記録ID
+                    "entry.": CSV_COL.DUNGEON_NAME,    // ダンジョン
+                    "entry.": CSV_COL.REC_URL,         // URL
+                    "entry.": CSV_COL.VIDEO_URL,       // URL
+                    "entry.": CSV_COL.TIME_IGT,        // クリアタイム（IGT）
+                    "entry.": CSV_COL.TIME_RTA,        // クリアタイム（RTA）
+                    "entry.": CSV_COL.TIME,            // クリアタイム（IGT or RTA）
+                    "entry.": CSV_COL.TURN,            // ターン数
+                    "entry.": CSV_COL.FLOOR,           // 到達階層 
+                    "entry.": CSV_COL.NOTE,            // 特記事項
+                    "entry.": CSV_COL.COMMENT,         // 感想
+                    "entry.": CSV_COL.SHIREN,          // 使用キャラ
+                    "entry.": CSV_COL.ENEMIES,         // 倒した数
+                    "entry.": CSV_COL.LEVEL,           // レベル
+                    "entry.": CSV_COL.HP,              // HP
+                    "entry.": CSV_COL.WEAPON_NAME,     // 武器
+                    "entry.": CSV_COL.WEAPON_PLUS,     // 武器補正
+                    "entry.": CSV_COL.SHIELD_NAME,     // 盾
+                    "entry.": CSV_COL.SHIELD_PLUS,     // 盾補正
+                    "entry.": CSV_COL.BRACELET1,       // 腕輪1
+                    "entry.": CSV_COL.BRACELET2,       // 腕輪2
+                    "entry.": CSV_COL.WEAPON_TOTAL,    // 武器のつよさ
+                    "entry.": CSV_COL.SHIELD_TOTAL,    // 武器のつよさ
+                    "entry.": CSV_COL.POWER,           // ちから
+                    "entry.": CSV_COL.GITAN,           // ギタン
+                    "entry.": CSV_COL.IMAGE_URL,       // 画像
+                }
+                const authItem = [
+                    { id: "", val: key },
+                    { id: "", val: secret },
+                    { id: "", val: password },
+                ].map(v => `${v.id}=${v.val}`).join("&");
+
+                const query = Object.keys(items).map(k => `${k}=${record[items[k]]}`).join("&");
+                return `${FORM_URL}?${authItem}&${query}`;
+            }
         }
 
         /**
@@ -1681,7 +1743,7 @@
                 // クエリパラメータより条件して設定取得
                 const urlParams = new URLSearchParams(window.location.search);
                 const params = Object.fromEntries(urlParams.entries());
-                
+
                 pageState.userCondition = params.users?.split(',') || [];
 
                 // 初期ロード
