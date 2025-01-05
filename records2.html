@@ -452,42 +452,38 @@
     </style>
     <script src="encrypter.js"></script>
     <script>
-        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScpQz9Q051_rAAwe_w98FSRgldtOy5-wIGxg5F6R_eIMYV5Vg/viewform";
-        // const CSV_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQjDyl_00bayhBahhb1L0mPHUpYm_1tP9E3l5psQjvhHYbfx8c5uHydi4HPkh_iy-s58XcCMKazXLJt/pub?gid=795675206&single=true&output=csv';
-        const CSV_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQjDyl_00bayhBahhb1L0mPHUpYm_1tP9E3l5psQjvhHYbfx8c5uHydi4HPkh_iy-s58XcCMKazXLJt/pub?gid=258625725&single=true&output=csv';
+        const CSV_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTdL7TlfiqX8nBYcihP29JO_78412DI8bs4fqCoY7FRfT-GnfN6F4qUzZgdOZ6m_99iK7RQZsf6bwye/pub?gid=1185890570&single=true&output=csv';
         const CSV_COL = {
-            USER_IMAGE_URL: 0,  // アイコン
-            TIMESTAMP: 1,       // タイムスタンプ
-            PLAYER_ID: 2,       // 走者ID
-            NAME: 3,            // 名前（投稿時）
-            REC_ID: 4,          // 記録ID
-            DUNGEON_NAME: 5,    // ダンジョン
-            REC_URL: 6,         // URL
-            VIDEO_URL: 7,       // URL
-            TIME_IGT: 8,        // クリアタイム（IGT）
-            TIME_RTA: 9,        // クリアタイム（RTA）
-            TURN: 10,           // ターン数
-            FLOOR: 11,          // 到達階層 
-            NOTE: 12,           // 特記事項
-            COMMENT: 13,        // 感想
-            SHIREN: 14,         // 使用キャラ
+            PLAYER_ID: 1,       // 走者ID           
+            REC_ID: 2,          // 記録ID
+            EDITKEY: 3,         // 編集キー
+            RESULT_IMAGE_URL: 4,// 画像
+            NAME: 5,            // 名前（投稿時）
+            TWITTERID: 6,       // TwitterID
+            USER_IMAGE_URL: 7,  // アイコン
+            DUNGEON_NAME: 8,    // ダンジョン
+            SHIREN: 9,          // 使用キャラ
+            REC_URL: 10,        // URL
+            VIDEO_URL: 11,      // URL
+            TIME: 12,           // クリアタイム（IGT）
+            TURN: 13,           // ターン数
+            FLOOR: 14,          // 到達階層 
             ENEMIES: 15,        // 倒した数
             LEVEL: 16,          // レベル
             HP: 17,             // HP
             WEAPON_NAME: 18,    // 武器
             WEAPON_PLUS: 19,    // 武器補正
-            SHIELD_NAME: 20,    // 盾
-            SHIELD_PLUS: 21,    // 盾補正
-            BRACELET1: 22,      // 腕輪1
-            BRACELET2: 23,      // 腕輪2
-            WEAPON_TOTAL: 24,   // 武器のつよさ
-            SHIELD_TOTAL: 25,   // 武器のつよさ
+            WEAPON_TOTAL: 20,   // 武器のつよさ
+            SHIELD_NAME: 21,    // 盾
+            SHIELD_PLUS: 22,    // 盾補正
+            SHIELD_TOTAL: 23,   // 盾のつよさ
+            BRACELET1: 24,      // 腕輪1
+            BRACELET2: 25,      // 腕輪2
             POWER: 26,          // ちから
             GITAN: 27,          // ギタン
-            IMAGE_URL: 28,      // 画像
-            TIME: 29,           // クリアタイム（IGT or RTA）
-            TWITTERID: 30,      // TwitterID
-            EDITKEY: 31,        // 編集キー
+            NOTE: 28,           // 特記事項
+            COMMENT: 29,        // 感想       
+            TIMESTAMP: 30,       // タイムスタンプ    
         }
         const UNKNOWN = '--(不明)';
         const WEAPON_NAMES = [
@@ -1498,8 +1494,8 @@
                         const csvArray = (await utils.fetchCsv(this.currentConfig.csvUrl, this.csvCache))
                             .filter(r => !this.currentConfig.extFilter || this.currentConfig.extFilter(r));
                         this.currentConfig.header = csvArray[0];
-                        this.currentConfig.records = csvArray.slice(1);
-                        this.currentConfig.users = Array.from(new Map(csvArray.slice(1)
+                        this.currentConfig.records = csvArray.slice(2);
+                        this.currentConfig.users = Array.from(new Map(csvArray.slice(2)
                             .map(r => [r[CSV_COL.PLAYER_ID], {
                                 id: r[CSV_COL.PLAYER_ID],
                                 name: r[CSV_COL.NAME],
@@ -1680,7 +1676,7 @@
             createLinks(val, all) {
                 return [
                     `<button onclick="utils.openEditRecord(this)" editkey="${all[CSV_COL.EDITKEY]}" class="btn-edit" screenName="${all[CSV_COL.TWITTERID]}">更新</button>`,
-                    (all[CSV_COL.IMAGE_URL] ? `<button onclick="pageState.openImage('${all[CSV_COL.IMAGE_URL]}')">画像</button>` : ''),
+                    (all[CSV_COL.RESULT_IMAGE_URL] ? `<button onclick="pageState.openImage('${all[CSV_COL.RESULT_IMAGE_URL]}')">画像</button>` : ''),
                     (all[CSV_COL.REC_URL] ? `<button onclick="window.open('${all[CSV_COL.REC_URL]}')">ポスト</button>` : ''),
                     (all[CSV_COL.VIDEO_URL] ? `<button onclick="window.open('${all[CSV_COL.VIDEO_URL]}')" >動画</button>` : ''),
                 ].filter(v => v).join("&nbsp")

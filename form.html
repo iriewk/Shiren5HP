@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>記録投稿</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet">
+    <style>
+        * {
+            color: rgba(255, 240, 200);
+            font-size: 16px;
+            font-family: "M PLUS Rounded 1c", serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        body {
+            background-color: rgb(1, 97, 83);
+            overflow-y: scroll;
+        }
+
+        header {
+            max-width: 1000px;
+            width: 95%;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: rgb(20, 10, 0);
+            position: sticky;
+            top: 0px;
+            z-index: 10;
+        }
+
+        main {
+            width: 95%;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            min-height: 600px;
+            height: 50vh;
+        }
+
+        main #imageContainer {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: none;
+        }
+
+        main #imageContainer #image {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            position: absolute;
+            top: 0px;
+        }
+
+        main #imageContainer .container-item {
+            position: absolute;
+            top: 0px;
+        }
+
+        main #googleform {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(315deg, rgba(2, 0, 36, 1) 0%, rgba(121, 9, 9, 1) 59%, rgba(0, 5, 50, 1) 100%);
+        }
+
+        header div,
+        header button,
+        header select {
+            min-height: 30px;
+            font-weight: bold;
+            background-color: rgb(85, 10, 10);
+            margin-bottom: 2px;
+        }
+
+        * button:hover {
+            background: linear-gradient(315deg, rgb(150, 148, 177) 0%, rgba(121, 9, 9, 1) 59%, rgba(150, 148, 177) 100%);
+        }
+
+        * button:disabled {
+            background: linear-gradient(315deg, rgb(42, 42, 49) 0%, rgb(75, 5, 5) 59%, rgb(45, 44, 53) 100%);
+            color: rgba(250, 250, 250, 0.3);
+        }
+
+        header #initPhase {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        header #initPhase #twitterLabel {
+            text-align: center;
+            display: none;
+        }
+
+        header #selectPhase {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        header #analyzePhase {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .loader-container {
+            visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .loader {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .loading-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 140px;
+            font-family: "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ Pro W3", "メイリオ", sans-serif;
+            color: #484848;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            animation: textFade 2s ease-in-out infinite;
+        }
+
+        .ink-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 6px solid transparent;
+            border-top-color: #484848;
+            border-radius: 50%;
+            opacity: 0.7;
+            filter: blur(0.7px);
+            animation: inkSpin 2s ease-in-out infinite;
+        }
+
+        .petal {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #ffd7e5;
+            border-radius: 50% 0 50% 50%;
+            transform: rotate(45deg);
+            filter: blur(0.5px);
+        }
+
+        .petal:nth-child(2) {
+            animation: floatPetal1 4s ease-in-out infinite;
+        }
+
+        .petal:nth-child(3) {
+            animation: floatPetal2 4s ease-in-out infinite;
+            animation-delay: -1s;
+        }
+
+        .petal:nth-child(4) {
+            animation: floatPetal3 4s ease-in-out infinite;
+            animation-delay: -2s;
+        }
+
+        .center-mark {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 52px;
+            left: 52px;
+            background-color: #b44c97;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes inkSpin {
+            0% {
+                transform: rotate(0deg) scale(0.9);
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.1);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(0.9);
+            }
+        }
+
+        @keyframes floatPetal1 {
+
+            0%,
+            100% {
+                transform: translate(20px, 20px) rotate(45deg);
+            }
+
+            50% {
+                transform: translate(40px, -20px) rotate(90deg);
+            }
+        }
+
+        @keyframes floatPetal2 {
+
+            0%,
+            100% {
+                transform: translate(-20px, 20px) rotate(45deg);
+            }
+
+            50% {
+                transform: translate(-40px, -20px) rotate(0deg);
+            }
+        }
+
+        @keyframes floatPetal3 {
+
+            0%,
+            100% {
+                transform: translate(0px, -20px) rotate(45deg);
+            }
+
+            50% {
+                transform: translate(20px, 20px) rotate(90deg);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes textFade {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <script>
+        window.onload = () => {
+            const $initPhase = document.querySelector('#initPhase');
+            const $selectPhase = document.querySelector('#selectPhase');
+            const $analyzePhase = document.querySelector('#analyzePhase');
+
+            const $file = document.querySelector('#file');
+            const $imageContainer = document.querySelector('#imageContainer');
+            const $img = document.querySelector('#imageContainer #image');
+            const $loading = document.querySelector('#loading');
+            const $analyze = document.querySelector('#analyze');
+            const $backAnalyze = document.querySelector('#backAnalyze');
+            const $googleform = document.querySelector('#googleform');
+
+            const $btnModeAnalyze = document.querySelector('#modeAnalyze');
+            const $btnModeManually = document.querySelector('#modeManually');
+
+            const $twitter = document.querySelector('#twitter');
+            const $twitterCombine = document.querySelector('#twitterCombine');
+            const $twitterLabel = document.querySelector('#twitterLabel');
+
+            // Twitter連携
+            $twitter.addEventListener('click', () => {
+                $twitterCombine.src = `register.html?${new Date().getSeconds()}`;
+            });
+
+            // X連携待ち
+            window.addEventListener('message', (event) => {
+                if (event.origin === window.origin && event.data.action == "xauth") {
+                    window.xauth = event.data.message;
+                    console.log(event.data.message);
+                    $twitterCombine.src = '';
+                    $twitter.style.display = 'none';
+                    $twitterLabel.style.display = 'block';
+                    $twitterLabel.innerHTML = `Twitter認証済：${window.xauth.username}`;
+                    $selectPhase.querySelectorAll('button').forEach(e => e.disabled = false);
+                }
+            });
+
+            // 解析モード
+            $btnModeAnalyze.addEventListener('click', () => {
+                $selectPhase.style.display = 'none';
+                $analyzePhase.style.display = 'grid';
+                $imageContainer.style.display = 'block';
+                $loading.style.visibility = 'hidden';
+                $googleform.style.display = 'none';
+                $analyze.disabled = true;
+                $backAnalyze.disabled = true;
+                $img.src = $img.attributes.defaultSrc.value;
+            });
+
+            // 直接入力モード
+            $btnModeManually.addEventListener('click', () => {
+                $selectPhase.style.display = 'none';
+                $imageContainer.style.display = 'none';
+                openGoogleForm([
+                    `entry.625098064=${window.xauth.shirenToken || ''}`, // Twitter連携キー
+                    `entry.1620199269=${window.xauth.screenName || ''}`, // TwitterID
+                    `entry.418136609=${window.xauth.userImageUrl || ''}`, // アイコンURL
+                    `entry.561769316=${window.xauth.username || ''}`, // 名前
+                    `entry.209859253=${'公開'}`,
+                ]);
+            });
+
+            // ファイル選択
+            $file.addEventListener('change', () => {
+                if ($file.files.length == 1) {
+                    const file = $file.files[0];
+                    console.log("File selected: ", file);
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = function () {
+                        const base64String = reader.result;
+                        $img.src = base64String;
+                        $analyze.disabled = false;
+                        $backAnalyze.disabled = false;
+                    };
+                }
+            });
+
+            // 解析
+            $analyze.addEventListener('click', async () => {
+                $loading.style.visibility = 'visible';
+                const res = await fetch("/api/v1/user/shiren6/resultImageAnalyze",
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image: $img.src
+                        })
+                    }
+                );
+                const json = await res.json();
+                const ret = json.data;
+                /*
+                    {
+                        "player_name": "あらん", 
+                        "dungeon_name": "とぐろ島の神髄",
+                        "play_time": "1:32:30",
+                        "turn": "10093",
+                        "defeated_monsters": "262",
+                        "level": "24",
+                        "hp": {"current": 79, "max": 79},
+                        "weapon": {"name": "鉄塊の大剣", "bonus": "46"},
+                        "shield": {"name": "鉄塊の大盾", "bonus": "46"},
+                        "other1": {"name": "堅抜けの腕輪"},
+                        "other2": {"name": "気配察知の腕輪"},
+                        "weapon_strength": "55",
+                        "shield_strength": "49",
+                        "power": {"current":12, "max":12},
+                        "gold": "6269"
+                    }
+                */
+
+                const timeFormat = (timeVal) => {
+                    const timeParts = timeVal.split(':');
+                    return [
+                        `${(timeParts[0] || '00')}`.padStart(2, 0),
+                        `${(timeParts[1] || '00')}`.padStart(2, 0),
+                        `${(timeParts[2] || '00')}`.padStart(2, 0)
+                    ].join(":");
+                };
+                openGoogleForm([
+                    `entry.625098064=${window.xauth.shirenToken || ''}`, // Twitter連携キー
+                    `entry.1620199269=${window.xauth.screenName || ''}`, // TwitterID
+                    `entry.418136609=${window.xauth.userImageUrl || ''}`, // アイコンURL
+                    `entry.561769316=${window.xauth.username || ''}`, // 名前
+                    `entry.10741226=${ret?.dungeon_name || ''}`,
+                    `entry.483140255=${timeFormat(ret?.play_time || '')}`,
+                    `entry.1148992760=${ret?.turn || ''}`,
+                    `entry.1840153972=${ret?.defeated_monsters?.replace('体','') || ''}`,
+                    `entry.83302722=${ret?.level || ''}`,
+                    `entry.1417719280=${ret?.hp?.max || ''}`,
+                    `entry.1801079676=${ret?.weapon?.name || ''}`,
+                    `entry.85103263=${ret?.weapon?.bonus || ''}`,
+                    `entry.1865212959=${ret?.shield?.name || ''}`,
+                    `entry.1964819875=${ret?.shield?.bonus || ''}`,
+                    `entry.186668988=${ret?.other1?.name || ''}`,
+                    `entry.1770509482=${ret?.other2?.name || ''}`,
+                    `entry.576111948=${ret?.weapon_strength || ''}`,
+                    `entry.604544418=${ret?.shield_strength || ''}`,
+                    `entry.598939194=${ret?.power?.max || ''}`,
+                    `entry.1991072069=${ret?.gold?.replace(',','') || ''}`,
+                    `entry.209859253=${'公開'}`
+                ]);
+                $imageContainer.style.display = 'none';
+                $analyze.disabled = true;
+            });
+
+            // やり直す
+            $backAnalyze.addEventListener('click', async () => {
+                $btnModeAnalyze.click();
+            });
+
+            $twitterCombine.src = `register.html?mode=checkonly&${new Date().getSeconds()}`
+        }
+
+        function openGoogleForm(paramsBase) {
+            const params = encodeURI(paramsBase.join("&"));
+            const $googleform = document.querySelector('#googleform');
+            const url = "https://docs.google.com/forms/d/e/1FAIpQLSfY-YmsuYmKLUyf4OfsmHN7BpmlaOcnHYI5hhxRdVv6aOO4eA/viewform?" + params;
+            console.log(paramsBase.join("\n"));
+            console.log(url);
+            $googleform.src = url;
+            $googleform.style.display = 'block';
+        }
+    </script>
+</head>
+
+<body>
+    <header>
+
+        <div id="initPhase">
+            <div id="twitterLabel"></div>
+            <button id="twitter">Twitter認証する</button>
+            <iframe id="twitterCombine" style="display: none;"></iframe>
+        </div>
+
+        <div id="selectPhase">
+            <button id="modeAnalyze" disabled>リザルト画像解析（推奨）</button>
+            <button id="modeManually" disabled>フォーム直接入力</button>
+        </div>
+
+        <div id="analyzePhase">
+            <input type="file" id="file" accept="image/png, image/jpeg">
+            <button id="analyze" disabled>画像解析</button>
+            <button id="backAnalyze" disabled>やり直す</button>
+        </div>
+
+    </header>
+    <main>
+        <div id="imageContainer">
+            <img id="image" class="container-item" src="/shiren6/sample.jpg" defaultSrc="/shiren6/sample.jpg">
+            <div id="loading" class="loader-container container-item">
+                <div class="loader">
+                    <div class="ink-circle"></div>
+                    <div class="petal"></div>
+                    <div class="petal"></div>
+                    <div class="petal"></div>
+                    <div class="center-mark"></div>
+                    <div class="loading-text">解析中</div>
+                </div>
+            </div>
+        </div>
+        <iframe id="googleform" src="" frameborder="0" marginheight="0" marginwidth="0">
+            読み込んでいます…
+        </iframe>
+    </main>
+</body>
+
+</html>
